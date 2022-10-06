@@ -3,7 +3,6 @@ const MoleculerError = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
-		ctx.meta.user = ctx.params;
 		return true;
 	} catch (error) {
 		console.log("ERR", err);

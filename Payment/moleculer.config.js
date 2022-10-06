@@ -27,7 +27,7 @@
  */
 module.exports = {
 	// Namespace of nodes to segment your nodes on the same network.
-	namespace: "PayME-Wallet",
+	namespace: "Payment",
 	// Unique node identifier. Must be unique in a namespace.
 	nodeID: null,
 	// Custom metadata store. Store here what you want. Accessing: `this.broker.metadata`
@@ -194,7 +194,7 @@ module.exports = {
 			type: "Prometheus",
 			options: {
 				// HTTP port
-				port: 3031,
+				port: 3032,
 				// HTTP URL path
 				path: "/metrics",
 				// Default labels which are appended to all metrics labels

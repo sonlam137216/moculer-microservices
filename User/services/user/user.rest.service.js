@@ -75,7 +75,7 @@ module.exports = {
 				fullPath: "/v1/External/User/ForgotPassword",
 				auth: {
 					strategies: ["Default"],
-					mode: "try",
+					mode: "required",
 				},
 			},
 
@@ -95,7 +95,7 @@ module.exports = {
 				fullPath: "/v1/External/User/ResetPassword",
 				auth: {
 					strategies: ["Default"],
-					mode: "try",
+					mode: "required",
 				},
 			},
 
@@ -115,7 +115,7 @@ module.exports = {
 				fullPath: "/v1/External/User/Logout",
 				auth: {
 					strategies: ["Default"],
-					mode: "try",
+					mode: "required",
 				},
 			},
 
