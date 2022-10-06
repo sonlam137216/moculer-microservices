@@ -1,0 +1,14 @@
+module.exports = {
+	PAYMENT_METHOD: {
+		WALLET: "WALLET",
+		BANK: "BANK",
+		NAPAS: "NAPAS",
+	},
+	PAYMENT_STATUS: {
+		UNPAID: "UNPAID",
+		EXPIRED: "EXPIRED",
+		PAID: "PAID",
+		PROCESSING: "PROCESSING",
+		FAILED: "FAILED",
+	},
+};
