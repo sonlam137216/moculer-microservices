@@ -29,7 +29,7 @@ module.exports = async function (ctx) {
 
 		const url = `${process.env.FE_URL}/user/reset/${resetToken}`;
 
-		// send mail with url
+		// send with url
 
 		return {
 			code: 1000,

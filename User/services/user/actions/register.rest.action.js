@@ -7,8 +7,6 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("CTX", ctx);
-
 		const { fullName, email, phone, password, gender } = ctx.params.body;
 
 		const existingEmailOrPhone = await this.broker.call(
@@ -48,20 +46,45 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		// create login session
+		let loginSession = {
+			userId: userCreate.id,
+			expiredAt: moment(new Date()).add(1, "hour").toISOString(),
+		};
+
+		const userUpdated = await this.broker.call(
+			"v1.UserInfoModel.findOneAndUpdate",
+			[
+				{ id: userCreate.id },
+				{
+					loginSession,
+				},
+				{ new: true },
+			]
+		);
+
+		if (_.get(userUpdated, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message: "Tạo phiên đăng nhập không thành công!",
+				},
+			};
+		}
+
 		const payload = {
 			userId: userCreate.id,
 			expiredAt: moment(new Date()).add(1, "hour"),
 		};
 
 		const accessToken = createToken(payload);
-		console.log("ACCESS TOKEN", accessToken);
 
 		return {
 			code: 1000,
 			data: {
 				message: "Tạo tài khoản thành công!",
 				accessToken: accessToken,
-				user: userCreate,
+				user: userUpdated,
 			},
 		};
 	} catch (err) {

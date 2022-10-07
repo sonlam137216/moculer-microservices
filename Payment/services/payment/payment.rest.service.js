@@ -6,6 +6,7 @@
 
 const moleculerCron = require("moleculer-cron");
 const moleculerRabbitmq = require("moleculer-rabbitmq");
+// const cancelPaymentCronAction = require("./actions/cancelPaymentCron.task.action");
 
 const queueMixin = moleculerRabbitmq({
 	connection: process.env.RABBITMQ_URI,
@@ -13,11 +14,39 @@ const queueMixin = moleculerRabbitmq({
 });
 
 module.exports = {
-	name: "Payment.rest",
+	name: "Payment",
 
 	version: 1,
 
 	mixins: [moleculerCron, queueMixin],
+
+	// crons
+	crons: [
+		{
+			name: "CANCEL_PAYMENT_AFTER_1_HOUR",
+			cronTime: "* */1 * * * *",
+			async onTick() {
+				try {
+					// await this.call("v1.Payment.cancelPaymentTask.async");
+					// const payment = await this.broker.call("v1.PaymentInfoModel.findMany", [
+					// 	{
+					// 		createdAt: { $lt: timeBeforeOneHour },
+					// 		status: paymentConstant.PAYMENT_STATUS.UNPAID,
+					// 		id: {
+					// 			$nin: [queueTest]
+					// 		}
+					// 	},'', {limit: 10}
+					// ]);
+					// queue.push(payment)
+					// for 1 -10
+					// await this.call("v1.Payment.cancelPaymentTask.async", {params: payment[i]});
+					await this.call("v1.Payment.cancelPaymentTask.async");
+				} catch (err) {
+					console.log(err);
+				}
+			},
+		},
+	],
 
 	/**
 	 * Settings
@@ -92,6 +121,25 @@ module.exports = {
 			handler: require("./actions/getPaymentById.rest.action"),
 		},
 
+		// cron action
+
+		cancelPaymentTask: {
+			queue: {
+				amqp: {
+					prefetch: 1,
+				},
+				retry: {
+					max_retry: 3,
+					delay: (retryCount) => retryCount * 5000,
+				},
+				dedupHash: (ctx) =>
+					`Dùng để tránh trùng action (ví dụ nếu cùng dedupHash là 123 thì nó chạy 1 lần thôi`,
+			},
+			params: {},
+			timeout: 60000,
+			handler: require("./actions/cancelPaymentTask.task.action"),
+		},
+
 		/**
 		 * Welcome, a username
 		 *
@@ -122,7 +170,9 @@ module.exports = {
 	/**
 	 * Service created lifecycle event handler
 	 */
-	created() {},
+	created() {
+		// this.queueTest = []
+	},
 
 	/**
 	 * Service started lifecycle event handler

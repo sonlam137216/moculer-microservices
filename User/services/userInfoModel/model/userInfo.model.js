@@ -29,12 +29,15 @@ const Schema = mongoose.Schema(
 			type: String,
 			enum: _.values(userInfoConstant.GENDER),
 		},
-		expiredTokens: [
-			{
-				type: String,
-				default: [],
+		loginSession: {
+			userId: {
+				type: Number,
+				default: true,
 			},
-		],
+			expiredAt: {
+				type: Date,
+			},
+		},
 	},
 	{
 		collection: "Service_UserInfo",
@@ -52,4 +55,6 @@ Schema.plugin(autoIncrement.plugin, {
 	incrementBy: 1,
 });
 
-module.exports = mongoose.model(Schema.options.collection, Schema);
+module.exports =
+	mongoose.models.Service_UserInfo ||
+	mongoose.model(Schema.options.collection, Schema);
