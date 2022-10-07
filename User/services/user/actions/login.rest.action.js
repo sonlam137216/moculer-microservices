@@ -37,6 +37,24 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		// create session
+		// create login session
+		let loginSession = {
+			userId: existingUser.id,
+			expiredAt: moment(new Date()).add(1, "hour").toISOString(),
+		};
+
+		const userUpdated = await this.broker.call(
+			"v1.UserInfoModel.findOneAndUpdate",
+			[
+				{ id: existingUser.id },
+				{
+					loginSession,
+				},
+				{ new: true },
+			]
+		);
+
 		const payload = {
 			userId: existingUser.id,
 			expiredAt: moment(new Date()).add(1, "hour"),
@@ -48,7 +66,7 @@ module.exports = async function (ctx) {
 			code: 1000,
 			data: {
 				message: "Login thành công!",
-				user: existingUser,
+				user: userUpdated,
 				accessToken: accessToken,
 			},
 		};

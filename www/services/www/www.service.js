@@ -165,7 +165,6 @@ module.exports = {
 				req,
 				instance.auth
 			);
-			console.log("RESPONSE", response);
 			return response;
 		},
 		authorize: require("./methods/authorize.method"),
