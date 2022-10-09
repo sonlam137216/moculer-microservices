@@ -5,7 +5,7 @@
  */
 
 module.exports = {
-	name: "Wallet.rest",
+	name: "Wallet",
 
 	/**
 	 * Settings
@@ -27,7 +27,7 @@ module.exports = {
 				fullPath: "/v1/External/Wallet/CreateWallet",
 				auth: {
 					strategies: ["Default"],
-					mode: "try",
+					mode: "required",
 				},
 			},
 
@@ -35,7 +35,7 @@ module.exports = {
 				body: {
 					$$type: "object",
 					balanceAvailable: "number",
-					ownerId: "string",
+					ownerId: "number",
 					paymentMethods: "array",
 				},
 			},

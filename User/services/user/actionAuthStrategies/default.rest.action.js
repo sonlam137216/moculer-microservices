@@ -1,5 +1,6 @@
 const _ = require("lodash");
 const MoleculerError = require("moleculer").Errors;
+const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
@@ -8,7 +9,7 @@ module.exports = async function (ctx) {
 
 		// find user
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
-			{ id: tokenInfo.id },
+			{ id: tokenInfo.userId },
 		]);
 
 		console.log("USER INFO", userInfo);
@@ -24,11 +25,12 @@ module.exports = async function (ctx) {
 		}
 
 		// check login session
+		const now = new Date();
 		console.log(
 			"CHECK TOKEN",
 			moment(userInfo.loginSession.expiredAt).isAfter(now)
 		);
-		if (moment(userInfo.loginSession.expiredAt).isAfter(now)) {
+		if (!moment(userInfo.loginSession.expiredAt).isAfter(now)) {
 			return {
 				code: 1001,
 				data: {
@@ -38,7 +40,7 @@ module.exports = async function (ctx) {
 		}
 
 		return true;
-	} catch (error) {
+	} catch (err) {
 		console.log("ERR", err);
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);

@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const createToken = require("../../../utils/createToken");
 const MoleculerError = require("moleculer").Errors;
+const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
@@ -30,11 +31,11 @@ module.exports = async function (ctx) {
 		const url = `${process.env.FE_URL}/user/reset/${resetToken}`;
 
 		// send with url
-
 		return {
 			code: 1000,
 			data: {
 				message: "Kiểm tra email để cập nhật mật khẩu mới",
+				url,
 			},
 		};
 	} catch (err) {

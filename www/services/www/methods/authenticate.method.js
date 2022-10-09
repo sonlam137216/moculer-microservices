@@ -5,14 +5,6 @@ const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx, route, req, authHandler) {
 	// if (req.url === '/api/list-aliases') return { credentials: null, isValid: false };
-	console.log("CTX", ctx);
-	console.log("===========================");
-	console.log("ROUTE", route);
-	console.log("===========================");
-	console.log("REQ", req);
-	console.log("===========================");
-	console.log("AUTH HANDLER", authHandler);
-	console.log("===========================");
 
 	let authConf = {
 		strategies: ["Default"],
@@ -93,6 +85,7 @@ module.exports = async function (ctx, route, req, authHandler) {
 			data = await ctx.broker.call(action, decoded);
 		}
 	} catch (error) {
+		console.log(error);
 		throw new MoleculerError(error.message, 401, null, error.data);
 	}
 	return { credentials: decoded, isValid, data };

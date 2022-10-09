@@ -3,11 +3,21 @@ const MoleculerError = require("moleculer").Errors;
 const JsonWebToken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const createToken = require("../../../utils/createToken");
+const validateEmail = require("../../../utils/validateEmail");
 const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
 		const { fullName, email, phone, password, gender } = ctx.params.body;
+
+		if (!validateEmail(email)) {
+			return {
+				code: 1001,
+				data: {
+					message: "Email không hợp lệ!",
+				},
+			};
+		}
 
 		const existingEmailOrPhone = await this.broker.call(
 			"v1.UserInfoModel.findOne",

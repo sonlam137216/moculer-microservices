@@ -66,7 +66,7 @@ module.exports = async function (ctx) {
 			code: 1000,
 			data: {
 				message: "Login thành công!",
-				user: userUpdated,
+				user: { ...userUpdated, password: "" },
 				accessToken: accessToken,
 			},
 		};
