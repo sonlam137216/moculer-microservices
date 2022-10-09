@@ -75,7 +75,7 @@ module.exports = {
 				fullPath: "/v1/External/User/ForgotPassword",
 				auth: {
 					strategies: ["Default"],
-					mode: "required",
+					mode: "try",
 				},
 			},
 

@@ -14,7 +14,7 @@ const Schema = mongoose.Schema(
 			default: 0,
 		},
 		ownerId: {
-			type: String,
+			type: Number,
 			required: true,
 		},
 		paymentMethods: [

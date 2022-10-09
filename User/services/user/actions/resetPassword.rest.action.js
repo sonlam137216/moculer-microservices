@@ -8,13 +8,22 @@ module.exports = async function (ctx) {
 		console.log("CTX", ctx);
 
 		const { password } = ctx.params.body;
+		const { userId } = ctx.meta.auth.credentials;
 
 		const hashedPassword = await bcrypt.hash(password, 12);
 
-		await this.broker.call("v1/UserInfoModel.findOneAndUpdate", [
-			{ id: req.userId },
-			{ password: hashedPassword },
-		]);
+		const updatedUser = await this.broker.call(
+			"v1.UserInfoModel.findOneAndUpdate",
+			[{ id: userId }, { password: hashedPassword }]
+		);
+
+		return {
+			code: 1000,
+			data: {
+				message: "Cập nhật mật khẩu thành công!",
+				userInfo: updatedUser,
+			},
+		};
 	} catch (err) {
 		console.log("ERR", err);
 		if (err.name === "MoleculerError") throw err;

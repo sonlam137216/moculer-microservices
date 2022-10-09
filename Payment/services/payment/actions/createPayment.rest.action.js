@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const paymentConstant = require("../constants/payment.constant");
 const MoleculerError = require("moleculer").Errors;
+const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
@@ -19,6 +20,29 @@ module.exports = async function (ctx) {
 				code: 1001,
 				data: {
 					message: "User không tồn tại!",
+				},
+			};
+		}
+
+		// check login session
+		const now = new Date();
+		if (
+			existingUser.loginSession.userId === null ||
+			existingUser.loginSession.expiredAt === null
+		) {
+			return {
+				code: 1001,
+				data: {
+					message: "Phiên đăng nhập đã hết, hãy đăng nhập lại!",
+				},
+			};
+		}
+
+		if (!moment(existingUser.loginSession.expiredAt).isAfter(now)) {
+			return {
+				code: 1001,
+				data: {
+					message: "Token đã bị hết hạn",
 				},
 			};
 		}

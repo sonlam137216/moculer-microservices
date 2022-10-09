@@ -32,10 +32,11 @@ const Schema = mongoose.Schema(
 		loginSession: {
 			userId: {
 				type: Number,
-				default: true,
+				default: null,
 			},
 			expiredAt: {
 				type: Date,
+				default: null,
 			},
 		},
 	},
