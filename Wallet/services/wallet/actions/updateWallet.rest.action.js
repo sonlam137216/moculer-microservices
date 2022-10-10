@@ -4,14 +4,14 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		const ownerId = ctx.meta.auth.credentials.userId;
+		const { userId, expiredAt } = ctx.meta.auth.credentials;
 
 		// type is methods update 'ADD' | 'SUB'
 		const { type, amount } = ctx.params.body;
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
-			[{ id: ownerId }]
+			[{ id: userId }]
 		);
 
 		if (!existingUser) {
@@ -46,10 +46,23 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		if (
+			!moment(existingUser.loginSession.expiredAt).isSame(
+				moment(expiredAt)
+			)
+		) {
+			return {
+				code: 1001,
+				data: {
+					message: "Token không đúng thời gian expired time",
+				},
+			};
+		}
+
 		// check exiting wallet
 		const walletInfo = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
-			[{ ownerId }]
+			[{ ownerId: userId }]
 		);
 
 		if (!walletInfo) {
@@ -95,7 +108,7 @@ module.exports = async function (ctx) {
 				[
 					{
 						id: walletInfo.id,
-						ownerId,
+						ownerId: userId,
 					},
 					{
 						balanceAvailable,

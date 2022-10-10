@@ -8,7 +8,7 @@ autoIncrement.initialize(mongoose);
 const Schema = mongoose.Schema(
 	{
 		userId: {
-			type: String,
+			type: Number,
 			required: true,
 		},
 		totalPrice: {

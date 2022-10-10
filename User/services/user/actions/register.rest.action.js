@@ -56,18 +56,19 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// create login session
-		let loginSession = {
+		const payload = {
 			userId: userCreate.id,
-			expiredAt: moment(new Date()).add(1, "hour").toISOString(),
+			expiredAt: moment(new Date()).add(1, "hour"),
 		};
+
+		console.log("PAYLOAD", payload);
 
 		const userUpdated = await this.broker.call(
 			"v1.UserInfoModel.findOneAndUpdate",
 			[
 				{ id: userCreate.id },
 				{
-					loginSession,
+					loginSession: payload,
 				},
 				{ new: true },
 			]
@@ -81,11 +82,6 @@ module.exports = async function (ctx) {
 				},
 			};
 		}
-
-		const payload = {
-			userId: userCreate.id,
-			expiredAt: moment(new Date()).add(1, "hour"),
-		};
 
 		const accessToken = createToken(payload);
 

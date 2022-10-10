@@ -5,6 +5,7 @@ const moment = require("moment");
 module.exports = async function (ctx) {
 	try {
 		const { balanceAvailable, ownerId, paymentMethods } = ctx.params.body;
+		const { expiredAt } = ctx.meta.auth.credentials;
 
 		// check ownerID
 		const existingUser = await this.broker.call(
@@ -40,6 +41,19 @@ module.exports = async function (ctx) {
 				code: 1001,
 				data: {
 					message: "Token đã bị hết hạn",
+				},
+			};
+		}
+
+		if (
+			!moment(existingUser.loginSession.expiredAt).isSame(
+				moment(expiredAt)
+			)
+		) {
+			return {
+				code: 1001,
+				data: {
+					message: "Token không đúng thời gian expired time",
 				},
 			};
 		}
