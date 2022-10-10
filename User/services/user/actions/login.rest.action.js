@@ -42,16 +42,20 @@ module.exports = async function (ctx) {
 			expiredAt: moment(new Date()).add(1, "hour"),
 		};
 
-		const userUpdated = await this.broker.call(
-			"v1.UserInfoModel.findOneAndUpdate",
-			[
-				{ id: existingUser.id },
-				{
-					loginSession: payload,
-				},
-				{ new: true },
-			]
+		const sessionCreate = await this.broker.call(
+			"v1.UserSessionModel.create",
+			[payload]
 		);
+
+		if (_.get(sessionCreate, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message:
+						"Không thể tạo phiên đăng nhập, vui lòng đăng nhập lại",
+				},
+			};
+		}
 
 		const accessToken = createToken(payload);
 
@@ -59,7 +63,7 @@ module.exports = async function (ctx) {
 			code: 1000,
 			data: {
 				message: "Login thành công!",
-				user: { ...userUpdated, password: "" },
+				user: existingUser,
 				accessToken: accessToken,
 			},
 		};

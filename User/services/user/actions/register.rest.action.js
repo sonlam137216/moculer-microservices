@@ -61,24 +61,17 @@ module.exports = async function (ctx) {
 			expiredAt: moment(new Date()).add(1, "hour"),
 		};
 
-		console.log("PAYLOAD", payload);
-
-		const userUpdated = await this.broker.call(
-			"v1.UserInfoModel.findOneAndUpdate",
-			[
-				{ id: userCreate.id },
-				{
-					loginSession: payload,
-				},
-				{ new: true },
-			]
+		const sessionCreate = await this.broker.call(
+			"v1.UserSessionModel.create",
+			[payload]
 		);
 
-		if (_.get(userUpdated, "id", null) === null) {
+		if (_.get(sessionCreate, "id", null) === null) {
 			return {
 				code: 1001,
 				data: {
-					message: "Tạo phiên đăng nhập không thành công!",
+					message:
+						"Không thể tạo phiên đăng nhập, vui lòng đăng nhập lại",
 				},
 			};
 		}

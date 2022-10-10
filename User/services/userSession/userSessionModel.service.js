@@ -1,10 +1,10 @@
 const DbService = require("moleculer-db");
 const MongooseAdapter = require("moleculer-db-adapter-mongoose");
 const MongooseAction = require("moleculer-db-adapter-mongoose-action");
-const userInfoModel = require("./model/userInfo.model");
+const userSessionModel = require("./model/userSession.model");
 
 module.exports = {
-	name: "UserInfoModel",
+	name: "UserSessionModel",
 
 	version: 1,
 
@@ -18,7 +18,7 @@ module.exports = {
 
 	actions: MongooseAction(),
 
-	model: userInfoModel,
+	model: userSessionModel,
 
 	/**
 	 * Events
