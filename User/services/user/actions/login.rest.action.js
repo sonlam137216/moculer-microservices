@@ -37,11 +37,9 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// create session
-		// create login session
-		let loginSession = {
+		const payload = {
 			userId: existingUser.id,
-			expiredAt: moment(new Date()).add(1, "hour").toISOString(),
+			expiredAt: moment(new Date()).add(1, "hour"),
 		};
 
 		const userUpdated = await this.broker.call(
@@ -49,16 +47,11 @@ module.exports = async function (ctx) {
 			[
 				{ id: existingUser.id },
 				{
-					loginSession,
+					loginSession: payload,
 				},
 				{ new: true },
 			]
 		);
-
-		const payload = {
-			userId: existingUser.id,
-			expiredAt: moment(new Date()).add(1, "hour"),
-		};
 
 		const accessToken = createToken(payload);
 
