@@ -9,19 +9,31 @@ module.exports = async function (ctx) {
 			paymentInfo: { id },
 		} = ctx.params.body;
 
-		// success = true
-		// id = 1
+		const updatedPayment = await this.broker.call(
+			"v1.PaymentInfoModel.findOneAndUpdate",
+			[
+				{
+					id,
+					status: paymentConstant.PAYMENT_STATUS.UNPAID,
+				},
+				{
+					status: success
+						? paymentConstant.PAYMENT_STATUS.PAID
+						: paymentConstant.PAYMENT_STATUS.FAILED,
+				},
+			]
+		);
+		console.log("updatedPayment", updatedPayment);
 
-		await this.broker.call("v1.PaymentInfoModel.findOneAndUpdate", [
-			{
-				id,
-			},
-			{
-				status: success
-					? paymentConstant.PAYMENT_STATUS.PAID
-					: paymentConstant.PAYMENT_STATUS.FAILED,
-			},
-		]);
+		if (!updatedPayment) {
+			return {
+				code: 1001,
+				data: {
+					message:
+						"Payment hết hạn hoặc cập nhật không thành công, vui lòng liên hệ trực tiếp!",
+				},
+			};
+		}
 
 		return {
 			code: 1000,

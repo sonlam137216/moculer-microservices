@@ -4,7 +4,7 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		const userId = ctx.meta.auth.credentials.userId;
+		const { userId, expiredAt } = ctx.meta.auth.credentials;
 
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
 			{ id: userId },
@@ -38,6 +38,18 @@ module.exports = async function (ctx) {
 				code: 1001,
 				data: {
 					message: "Token đã bị hết hạn",
+				},
+			};
+		}
+
+		// login -> logout -> login -> expired time will difference
+		if (
+			!moment(userInfo.loginSession.expiredAt).isSame(moment(expiredAt))
+		) {
+			return {
+				code: 1001,
+				data: {
+					message: "Token không đúng thời gian expired time",
 				},
 			};
 		}
