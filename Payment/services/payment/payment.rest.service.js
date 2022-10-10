@@ -6,6 +6,7 @@
 
 const moleculerCron = require("moleculer-cron");
 const moleculerRabbitmq = require("moleculer-rabbitmq");
+// const paymentInfoModel = require("../paymentInfoModel/model/paymentInfo.model");
 // const cancelPaymentCronAction = require("./actions/cancelPaymentCron.task.action");
 
 const queueMixin = moleculerRabbitmq({
@@ -24,7 +25,7 @@ module.exports = {
 	crons: [
 		{
 			name: "CANCEL_PAYMENT_AFTER_1_HOUR",
-			cronTime: "* */1 * * * *",
+			cronTime: "*/59 * * * * *",
 			async onTick() {
 				try {
 					// await this.call("v1.Payment.cancelPaymentTask.async");
@@ -56,7 +57,7 @@ module.exports = {
 	/**
 	 * Dependencies
 	 */
-	dependencies: [],
+	dependencies: ["v1.PaymentInfoModel"],
 
 	/**
 	 * Actions
@@ -122,7 +123,6 @@ module.exports = {
 		},
 
 		// cron action
-
 		cancelPaymentTask: {
 			queue: {
 				amqp: {
@@ -133,7 +133,7 @@ module.exports = {
 					delay: (retryCount) => retryCount * 5000,
 				},
 				dedupHash: (ctx) =>
-					`Dùng để tránh trùng action (ví dụ nếu cùng dedupHash là 123 thì nó chạy 1 lần thôi`,
+					`Dùng để tránh trùng action (ví dụ nếu cùng dedupHash là 123 thì nó chạy 1 lần thôi)`,
 			},
 			params: {},
 			timeout: 60000,

@@ -31,11 +31,13 @@ const Schema = mongoose.Schema(
 		},
 		loginSession: {
 			userId: {
-				type: Number,
+				type: String,
+				required: true,
 				default: null,
 			},
 			expiredAt: {
 				type: Date,
+				required: true,
 				default: null,
 			},
 		},

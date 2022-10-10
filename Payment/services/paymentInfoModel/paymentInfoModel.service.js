@@ -19,7 +19,6 @@ module.exports = {
 	actions: MongooseAction(),
 
 	model: paymentInfoModel,
-
 	/**
 	 * Events
 	 */
