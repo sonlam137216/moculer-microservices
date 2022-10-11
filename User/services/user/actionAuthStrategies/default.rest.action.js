@@ -1,10 +1,10 @@
 const _ = require("lodash");
 const MoleculerError = require("moleculer").Errors;
 const moment = require("moment");
+const userSessionConstant = require("../constants/userSession.constant");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("DEFAULT STRATEGIES");
 		const tokenInfo = ctx.params;
 
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
@@ -19,26 +19,26 @@ module.exports = async function (ctx) {
 		const now = new Date();
 		const loginSession = await this.broker.call(
 			"v1.UserSessionModel.findOne",
-			[{ userId: tokenInfo.userId }]
+			[
+				{
+					userId: tokenInfo.userId,
+					status: userSessionConstant.SESSION_STATUS.ACTIVE,
+				},
+			]
 		);
 		if (
 			_.get(loginSession, "userId", null) === null ||
 			_.get(loginSession, "expiredAt", null) === null
 		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Không tìm thấy phiên đăng nhập!",
-				},
-			};
+			throw new MoleculerError(401, "Không tìm thấy phiên đăng nhập!");
+			// };
 		}
-		if (!moment(userInfo.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
-				},
-			};
+		if (!moment(loginSession.expiredAt).isAfter(now)) {
+			throw new MoleculerError(401, "Token đã hết hạn!");
+		}
+
+		if (!moment(loginSession.expiredAt).isSame(tokenInfo.expiredAt)) {
+			throw new MoleculerError(401, "Thời gian expired không đúng!");
 		}
 
 		return true;

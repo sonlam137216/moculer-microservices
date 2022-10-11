@@ -44,6 +44,9 @@ const Schema = mongoose.Schema(
 	}
 );
 
+// indexes
+Schema.index({ id: 1 }, { unique: true, sparse: true });
+
 // plugins
 
 Schema.plugin(autoIncrement.plugin, {

@@ -1,36 +1,49 @@
 const _ = require("lodash");
-const userSessionConstant = require("../../userSession/constants/userSession.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
+		const { fullName, gender } = ctx.params.body;
 
-		const updatedUserSession = await this.broker.call(
-			"v1.UserSessionModel.findOneAndUpdate",
+		const updatedUser = await this.broker.call(
+			"v1.UserInfoModel.findOneAndUpdate",
 			[
 				{
-					userId,
+					id: userId,
 				},
 				{
-					status: userSessionConstant.SESSION_STATUS.EXPIRED,
+					fullName,
+					gender,
+				},
+				{
+					new: true,
 				},
 			]
 		);
 
-		if (!updatedUserSession) {
+		if (_.get(updatedUser, "id", null) === null) {
 			return {
 				code: 1001,
 				data: {
-					message: "Logout không thành công!",
+					message: "Cập nhật user không thành công",
 				},
 			};
 		}
 
+		const userInfo = _.pick(updatedUser, [
+			"id",
+			"fullName",
+			"email",
+			"phone",
+			"gender",
+		]);
+
 		return {
 			code: 1000,
 			data: {
-				message: "Logout thành công!",
+				message: "Cập nhật user thành công!",
+				userInfo,
 			},
 		};
 	} catch (err) {

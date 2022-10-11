@@ -17,6 +17,10 @@ const Schema = mongoose.Schema(
 			required: true,
 			default: null,
 		},
+		deviceId: {
+			type: String,
+			required: true,
+		},
 		status: {
 			type: String,
 			enum: _.values(userSessionConstant.SESSION_STATUS),
@@ -33,7 +37,7 @@ const Schema = mongoose.Schema(
 
 // indexes
 Schema.index({ id: 1 }, { unique: 1, sparse: false });
-Schema.index({ userId: 1 }, { unique: false, sparse: false });
+Schema.index({ userId: 1 }, { unique: false, sparse: true });
 
 // plugins
 Schema.plugin(autoIncrement.plugin, {

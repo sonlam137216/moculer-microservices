@@ -1,20 +1,31 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const JsonWebToken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const createToken = require("../../../utils/createToken");
 const validateEmail = require("../../../utils/validateEmail");
+const validatePhoneNumber = require("../../../utils/validatePhoneNumber");
 const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		const { fullName, email, phone, password, gender } = ctx.params.body;
+		const { fullName, email, phone, password, gender, deviceId } =
+			ctx.params.body;
 
 		if (!validateEmail(email)) {
 			return {
 				code: 1001,
 				data: {
 					message: "Email không hợp lệ!",
+				},
+			};
+		}
+
+		if (!validatePhoneNumber(phone)) {
+			return {
+				code: 1001,
+				data: {
+					message: "Số điện thoại không đúng định dạng!",
 				},
 			};
 		}
@@ -41,7 +52,9 @@ module.exports = async function (ctx) {
 			phone,
 			password: hashedPassword,
 			gender,
+			deviceIds: [deviceId],
 		};
+		console.log("CREATE", createObj);
 
 		const userCreate = await this.broker.call("v1.UserInfoModel.create", [
 			createObj,
@@ -59,6 +72,7 @@ module.exports = async function (ctx) {
 		const payload = {
 			userId: userCreate.id,
 			expiredAt: moment(new Date()).add(1, "hour"),
+			deviceId,
 		};
 
 		const sessionCreate = await this.broker.call(
@@ -78,12 +92,20 @@ module.exports = async function (ctx) {
 
 		const accessToken = createToken(payload);
 
+		const userInfo = _.pick(userCreate, [
+			"id",
+			"fullName",
+			"email",
+			"phone",
+			"gender",
+		]);
+
 		return {
 			code: 1000,
 			data: {
 				message: "Tạo tài khoản thành công!",
 				accessToken: accessToken,
-				user: userUpdated,
+				userInfo,
 			},
 		};
 	} catch (err) {

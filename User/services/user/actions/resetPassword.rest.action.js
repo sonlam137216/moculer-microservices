@@ -1,14 +1,26 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const JsonWebToken = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("CTX", ctx);
+		const { email, password, otp } = ctx.params.body;
 
-		const { password } = ctx.params.body;
-		const { userId } = ctx.meta.auth.credentials;
+		// verify email
+		const existingUser = await this.broker.call(
+			"v1.UserInfoModel.findOne",
+			[{ email }]
+		);
+
+		if (_.get(existingUser, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message: "User không tồn tại",
+				},
+			};
+		}
 
 		const hashedPassword = await bcrypt.hash(password, 12);
 

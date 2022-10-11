@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {

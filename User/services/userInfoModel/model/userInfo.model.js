@@ -29,6 +29,12 @@ const Schema = mongoose.Schema(
 			type: String,
 			enum: _.values(userInfoConstant.GENDER),
 		},
+		deviceIds: [
+			{
+				type: String,
+				required: true,
+			},
+		],
 	},
 	{
 		collection: "Service_UserInfo",
