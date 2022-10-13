@@ -1,7 +1,9 @@
 const _ = require("lodash");
-const createToken = require("../../../utils/createToken");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const md5 = require("md5");
+const generateOtp = require("../../../utils/generateOTP");
+const otpConstant = require("../constants/otp.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -21,21 +23,43 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const payload = {
-			userId: existingUser.id,
-			expiredAt: moment(new Date()).add(1, "hour"),
-		};
+		await this.broker.call("v1.OTPModel.updateMany", [
+			{
+				email,
+			},
+			{
+				status: otpConstant.OTP_STATUS.EXPIRED,
+			},
+		]);
 
-		const resetToken = createToken(payload);
+		const otp = generateOtp();
+		console.log("OTP", otp);
+		// hash OTP
+		const hashOtp = md5(otp);
+		// send OTP
 
-		const url = `${process.env.FE_URL}/user/reset/${resetToken}`;
+		const otpCreate = await this.broker.call("v1.OTPModel.create", [
+			{
+				email,
+				otp: hashOtp,
+				status: otpConstant.OTP_STATUS.ACTIVE,
+			},
+		]);
 
-		// send with url
+		if (!otpCreate) {
+			return {
+				code: 1001,
+				data: {
+					message: "Tạo otp không thành công",
+				},
+			};
+		}
+
 		return {
 			code: 1000,
 			data: {
 				message: "Kiểm tra email để cập nhật mật khẩu mới",
-				url,
+				otp,
 			},
 		};
 	} catch (err) {

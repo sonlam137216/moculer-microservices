@@ -9,29 +9,43 @@ module.exports = {
 
 	dependencies: [],
 
+	hooks: {
+		before: {
+			getUserInfo: ["checkValidDeviceId"],
+		},
+		// error: {
+		// 	"*": function (ctx, error) {
+		// 		return {
+		// 			data: [],
+		// 			succeeded: false,
+		// 			message: error.message || String(error),
+		// 		};
+		// 	},
+		// },
+	},
+
+	methods: {
+		checkValidDeviceId: require("./hooks/checkValidDeviceId.hook"),
+	},
+
 	actions: {
 		// Start define auth strategies
-
 		default: {
 			registry: {
 				auth: {
 					name: "Default",
-					jwtKey: "secret",
+					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
 				},
 			},
 			handler: require("./actionAuthStrategies/default.rest.action"),
 		},
 
 		// End define auth strategies
-
 		register: {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/Register",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
@@ -42,6 +56,7 @@ module.exports = {
 					phone: "string",
 					password: "string",
 					gender: "string",
+					deviceId: "string",
 				},
 			},
 
@@ -52,10 +67,7 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/Login",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
@@ -63,9 +75,9 @@ module.exports = {
 					$$type: "object",
 					email: "string",
 					password: "string",
+					deviceId: "string",
 				},
 			},
-
 			handler: require("./actions/login.rest.action"),
 		},
 
@@ -73,10 +85,7 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/ForgotPassword",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
@@ -93,16 +102,15 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/ResetPassword",
-				auth: {
-					strategies: ["Default"],
-					mode: "required",
-				},
+				auth: false,
 			},
 
 			params: {
 				body: {
 					$$type: "object",
+					email: "string",
 					password: "string",
+					otp: "string",
 				},
 			},
 
@@ -137,6 +145,27 @@ module.exports = {
 			params: {},
 
 			handler: require("./actions/getUserInfo.rest.action"),
+		},
+
+		updateUser: {
+			rest: {
+				method: "POST",
+				fullPath: "/v1/External/User/UpdateUserInfo",
+				auth: {
+					strategies: ["Default"],
+					mode: "required",
+				},
+			},
+
+			params: {
+				body: {
+					$$type: "object",
+					fullName: "string",
+					gender: "string",
+				},
+			},
+
+			handler: require("./actions/updateUser.rest.action"),
 		},
 	},
 };

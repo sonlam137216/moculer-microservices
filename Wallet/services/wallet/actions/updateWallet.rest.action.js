@@ -1,10 +1,14 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const walletConstant = require("../constants/wallet.constant");
 
 module.exports = async function (ctx) {
+	let lock;
 	try {
-		const { userId, expiredAt } = ctx.meta.auth.credentials;
+		const { userId } = ctx.meta.auth.credentials;
+
+		lock = await this.broker.cacher.lock(`accountId_${userId}`, 60 * 1000);
 
 		// type is methods update 'ADD' | 'SUB'
 		const { type, amount } = ctx.params.body;
@@ -23,43 +27,7 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// check login session
-		const now = new Date();
-		if (
-			existingUser.loginSession.userId === null ||
-			existingUser.loginSession.expiredAt === null
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Phiên đăng nhập đã hết, hãy đăng nhập lại!",
-				},
-			};
-		}
-
-		if (!moment(existingUser.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
-				},
-			};
-		}
-
-		if (
-			!moment(existingUser.loginSession.expiredAt).isSame(
-				moment(expiredAt)
-			)
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token không đúng thời gian expired time",
-				},
-			};
-		}
-
-		// check exiting wallet
+		// check existing wallet
 		const walletInfo = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
 			[{ ownerId: userId }]
@@ -79,12 +47,19 @@ module.exports = async function (ctx) {
 		let isValidBalance = true;
 
 		switch (type) {
-			case "ADD": {
+			case walletConstant.WALLET_ACTION_TYPE.ADD: {
 				balanceAvailable = walletInfo.balanceAvailable + amount;
 				message = "Cộng tiền ví thành công!";
+
+				// await new Promise((resolve) => {
+				// 	setTimeout(() => {
+				// 		console.log("ADD");
+				// 		resolve();
+				// 	}, 10000);
+				// });
 				break;
 			}
-			case "SUB": {
+			case walletConstant.WALLET_ACTION_TYPE.SUB: {
 				balanceAvailable = walletInfo.balanceAvailable - amount;
 
 				if (balanceAvailable < 0) {
@@ -103,6 +78,29 @@ module.exports = async function (ctx) {
 		}
 
 		if (isValidBalance) {
+			const walletHistory = await this.broker.call(
+				"v1.WalletHistoryModel.create",
+				[
+					{
+						userId,
+						walletInfoId: walletInfo.id,
+						balanceBefore: walletInfo.balanceAvailable,
+						balanceAfter: balanceAvailable,
+						transferType: type,
+						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
+					},
+				]
+			);
+
+			if (!_.get(walletHistory, "id", null) === null) {
+				return {
+					code: 1001,
+					data: {
+						message: "Tạo lịch sử không thành công!",
+					},
+				};
+			}
+
 			const updatedWalletInfo = await this.broker.call(
 				"v1.WalletInfoModel.findOneAndUpdate",
 				[
@@ -118,6 +116,42 @@ module.exports = async function (ctx) {
 					},
 				]
 			);
+
+			if (!_.get(updatedWalletInfo, "id", null) === null) {
+				await this.broker.call(
+					"v1.WalletHistoryModel.findOneAndUpdate",
+					[
+						{
+							id: walletHistory.id,
+						},
+						{
+							status: walletConstant.WALLET_HISTORY_STATUS.FAILED,
+						},
+						{
+							new: true,
+						},
+					]
+				);
+
+				return {
+					code: 1001,
+					data: {
+						message: "Tạo lịch sử không thành công!",
+					},
+				};
+			}
+
+			await this.broker.call("v1.WalletHistoryModel.findOneAndUpdate", [
+				{
+					id: walletHistory.id,
+				},
+				{
+					status: walletConstant.WALLET_HISTORY_STATUS.SUCCEEDED,
+				},
+				{
+					new: true,
+				},
+			]);
 
 			// udate thành công
 			return {
@@ -139,5 +173,11 @@ module.exports = async function (ctx) {
 		console.log(err);
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
+	} finally {
+		if (_.isFunction(lock)) {
+			// console.log("LOCK", lock);
+			// await this.broker.cacher.clean(`accountId_${accountId}`);
+			lock();
+		}
 	}
 };

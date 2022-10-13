@@ -1,20 +1,30 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
-const JsonWebToken = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const { MoleculerError } = require("moleculer").Errors;
 const createToken = require("../../../utils/createToken");
 const validateEmail = require("../../../utils/validateEmail");
+const validatePhoneNumber = require("../../../utils/validatePhoneNumber");
 const moment = require("moment");
+const md5 = require("md5");
 
 module.exports = async function (ctx) {
 	try {
-		const { fullName, email, phone, password, gender } = ctx.params.body;
+		const { fullName, email, phone, password, gender, deviceId } =
+			ctx.params.body;
 
 		if (!validateEmail(email)) {
 			return {
 				code: 1001,
 				data: {
 					message: "Email không hợp lệ!",
+				},
+			};
+		}
+
+		if (!validatePhoneNumber(phone)) {
+			return {
+				code: 1001,
+				data: {
+					message: "Số điện thoại không đúng định dạng!",
 				},
 			};
 		}
@@ -33,7 +43,7 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const hashedPassword = await bcrypt.hash(password, 12);
+		const hashedPassword = md5(password);
 
 		const createObj = {
 			fullName,
@@ -41,7 +51,9 @@ module.exports = async function (ctx) {
 			phone,
 			password: hashedPassword,
 			gender,
+			deviceIds: [deviceId],
 		};
+		console.log("CREATE", createObj);
 
 		const userCreate = await this.broker.call("v1.UserInfoModel.create", [
 			createObj,
@@ -59,38 +71,40 @@ module.exports = async function (ctx) {
 		const payload = {
 			userId: userCreate.id,
 			expiredAt: moment(new Date()).add(1, "hour"),
+			deviceId,
 		};
 
-		console.log("PAYLOAD", payload);
-
-		const userUpdated = await this.broker.call(
-			"v1.UserInfoModel.findOneAndUpdate",
-			[
-				{ id: userCreate.id },
-				{
-					loginSession: payload,
-				},
-				{ new: true },
-			]
+		const sessionCreate = await this.broker.call(
+			"v1.UserSessionModel.create",
+			[payload]
 		);
 
-		if (_.get(userUpdated, "id", null) === null) {
+		if (_.get(sessionCreate, "id", null) === null) {
 			return {
 				code: 1001,
 				data: {
-					message: "Tạo phiên đăng nhập không thành công!",
+					message:
+						"Không thể tạo phiên đăng nhập, vui lòng đăng nhập lại",
 				},
 			};
 		}
 
 		const accessToken = createToken(payload);
 
+		const userInfo = _.pick(userCreate, [
+			"id",
+			"fullName",
+			"email",
+			"phone",
+			"gender",
+		]);
+
 		return {
 			code: 1000,
 			data: {
 				message: "Tạo tài khoản thành công!",
 				accessToken: accessToken,
-				user: userUpdated,
+				userInfo,
 			},
 		};
 	} catch (err) {

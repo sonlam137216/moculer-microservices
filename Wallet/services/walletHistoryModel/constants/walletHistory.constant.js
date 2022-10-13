@@ -1,0 +1,12 @@
+module.exports = {
+	WALLET_HISTORY_STATUS: {
+		PENDING: "PENDING",
+		SUCCEEDED: "SUCCEEDED",
+		FAILED: "FAILED",
+	},
+	WALLET_ACTION_TYPE: {
+		ADD: "ADD",
+		SUB: "SUB",
+		PAYMENT: "PAYMENT",
+	},
+};

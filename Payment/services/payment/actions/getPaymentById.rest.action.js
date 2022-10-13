@@ -10,6 +10,9 @@ module.exports = async function (ctx) {
 			params: { id },
 		} = ctx.params;
 
+		this.setLocale("vi");
+		console.log("I18N", this.__("error"));
+
 		// check UserID
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -21,43 +24,6 @@ module.exports = async function (ctx) {
 				code: 1001,
 				data: {
 					message: "User không tồn tại!",
-				},
-			};
-		}
-
-		// check login session
-		const now = new Date();
-		if (
-			existingUser.loginSession.userId === null ||
-			existingUser.loginSession.expiredAt === null
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Phiên đăng nhập đã hết, hãy đăng nhập lại!",
-				},
-			};
-		}
-
-		if (!moment(existingUser.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
-				},
-			};
-		}
-
-		// login -> logout -> login -> expired time will difference
-		if (
-			!moment(existingUser.loginSession.expiredAt).isSame(
-				moment(expiredAt)
-			)
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token không đúng thời gian expired time",
 				},
 			};
 		}

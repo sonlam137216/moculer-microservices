@@ -1,25 +1,26 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const userSessionConstant = require("../../userSession/constants/userSession.constant");
+const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
-		const accessToken = ctx.meta.token;
-		const user = ctx.meta.auth;
-		console.log("USER", user);
+		const { userId, deviceId } = ctx.meta.auth.credentials;
 
-		const updatedUser = await this.broker.call(
-			"v1.UserInfoModel.findOneAndUpdate",
+		const updatedUserSession = await this.broker.call(
+			"v1.UserSessionModel.findOneAndUpdate",
 			[
 				{
-					id: user.credentials.userId,
+					userId,
+					deviceId,
+					status: userSessionConstant.SESSION_STATUS.ACTIVE,
 				},
 				{
-					loginSession: { userId: null, expiredAt: null },
+					status: userSessionConstant.SESSION_STATUS.EXPIRED,
 				},
 			]
 		);
 
-		if (!updatedUser) {
+		if (!updatedUserSession) {
 			return {
 				code: 1001,
 				data: {

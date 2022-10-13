@@ -6,6 +6,8 @@
 
 const moleculerCron = require("moleculer-cron");
 const moleculerRabbitmq = require("moleculer-rabbitmq");
+const moleculerI18n = require("moleculer-i18n-js");
+const path = require("path");
 // const paymentInfoModel = require("../paymentInfoModel/model/paymentInfo.model");
 // const cancelPaymentCronAction = require("./actions/cancelPaymentCron.task.action");
 
@@ -19,28 +21,21 @@ module.exports = {
 
 	version: 1,
 
-	mixins: [moleculerCron, queueMixin],
+	mixins: [moleculerCron, queueMixin, moleculerI18n],
+
+	i18n: {
+		directory: path.join(__dirname, "locales"),
+		locales: ["vi", "en"],
+		defaultLocale: "vi",
+	},
 
 	// crons
 	crons: [
 		{
 			name: "CANCEL_PAYMENT_AFTER_1_HOUR",
-			cronTime: "*/59 * * * * *",
+			cronTime: "0 * * * * *",
 			async onTick() {
 				try {
-					// await this.call("v1.Payment.cancelPaymentTask.async");
-					// const payment = await this.broker.call("v1.PaymentInfoModel.findMany", [
-					// 	{
-					// 		createdAt: { $lt: timeBeforeOneHour },
-					// 		status: paymentConstant.PAYMENT_STATUS.UNPAID,
-					// 		id: {
-					// 			$nin: [queueTest]
-					// 		}
-					// 	},'', {limit: 10}
-					// ]);
-					// queue.push(payment)
-					// for 1 -10
-					// await this.call("v1.Payment.cancelPaymentTask.async", {params: payment[i]});
 					await this.call("v1.Payment.cancelPaymentTask.async");
 				} catch (err) {
 					console.log(err);
@@ -63,6 +58,18 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
+		// start auth actions
+		default: {
+			registry: {
+				auth: {
+					name: "Default",
+					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
+				},
+			},
+			handler: require("./actionAuthStrategies/default.rest.action"),
+		},
+		// end auth actions
+
 		createPayment: {
 			rest: {
 				method: "POST",
@@ -82,7 +89,7 @@ module.exports = {
 					paymentMethod: "string",
 				},
 			},
-
+			timeout: 30000,
 			handler: require("./actions/createPayment.rest.action"),
 		},
 
@@ -90,20 +97,17 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/Payment/VerifyPaymentByNapas",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
 				body: {
 					$$type: "object",
-					success: "boolean",
-					paymentInfo: "object",
+					paymentId: "number",
+					response: "object",
 				},
 			},
-
+			timeout: 30000,
 			handler: require("./actions/verifyPaymentByNapas.rest.action"),
 		},
 
@@ -118,7 +122,7 @@ module.exports = {
 			},
 
 			params: {},
-
+			timeout: 30000,
 			handler: require("./actions/getPaymentById.rest.action"),
 		},
 
@@ -171,7 +175,7 @@ module.exports = {
 	 * Service created lifecycle event handler
 	 */
 	created() {
-		// this.queueTest = []
+		this.queuePaymentIds = [];
 	},
 
 	/**

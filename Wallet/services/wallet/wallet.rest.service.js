@@ -21,6 +21,17 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
+		// start auth actions
+		default: {
+			registry: {
+				auth: {
+					name: "Default",
+					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
+				},
+			},
+			handler: require("./actionAuthStrategies/default.rest.action"),
+		},
+		// end auth actions
 		createWallet: {
 			rest: {
 				method: "POST",
@@ -34,8 +45,6 @@ module.exports = {
 			params: {
 				body: {
 					$$type: "object",
-					balanceAvailable: "number",
-					ownerId: "number",
 					paymentMethods: "array",
 				},
 			},
@@ -59,6 +68,19 @@ module.exports = {
 		},
 
 		updateWallet: {
+			queue: {
+				amqp: {
+					prefetch: 1,
+				},
+				retry: {
+					max_retry: 3,
+					delay: (retryCount) => retryCount * 5000,
+				},
+				dedupHash: (ctx) =>
+					`Dùng để tránh trùng action (ví dụ nếu cùng dedupHash là 123 thì nó chạy 1 lần thôi)`,
+			},
+			timeout: 60000,
+
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/Wallet/UpdateWallet",

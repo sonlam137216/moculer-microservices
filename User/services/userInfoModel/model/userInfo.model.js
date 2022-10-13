@@ -29,16 +29,12 @@ const Schema = mongoose.Schema(
 			type: String,
 			enum: _.values(userInfoConstant.GENDER),
 		},
-		loginSession: {
-			userId: {
-				type: Number,
-				default: null,
+		deviceIds: [
+			{
+				type: String,
+				required: true,
 			},
-			expiredAt: {
-				type: Date,
-				default: null,
-			},
-		},
+		],
 	},
 	{
 		collection: "Service_UserInfo",
@@ -46,6 +42,12 @@ const Schema = mongoose.Schema(
 		timestamps: true,
 	}
 );
+
+// indexes
+Schema.index({ email: 1 }, { unique: true, sparse: false });
+Schema.index({ phone: 1 }, { unique: true, sparse: false });
+Schema.index({ id: 1 }, { unique: true, sparse: false });
+Schema.index({ fullName: 1 }, { index: true });
 
 // plugins
 

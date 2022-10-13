@@ -1,48 +1,56 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const userSessionConstant = require("../constants/userSession.constant");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("DEFAULT STRATEGIES");
+		// return true;
 		const tokenInfo = ctx.params;
 
-		// find user
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
 			{ id: tokenInfo.userId },
 		]);
 
-		console.log("USER INFO", userInfo);
-
-		// check existing user
 		if (_.get(userInfo, "id", null) === null) {
-			return {
-				code: 1001,
-				data: {
-					message: "Không tìm thấy không tin User",
-				},
-			};
+			throw new MoleculerError("Token không hợp lệ!", 401);
 		}
 
 		// check login session
 		const now = new Date();
-		console.log(
-			"CHECK TOKEN",
-			moment(userInfo.loginSession.expiredAt).isAfter(now)
-		);
-		if (!moment(userInfo.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
+		const loginSession = await this.broker.call(
+			"v1.UserSessionModel.findOne",
+			[
+				{
+					userId: tokenInfo.userId,
+					deviceId: tokenInfo.deviceId,
+					status: userSessionConstant.SESSION_STATUS.ACTIVE,
 				},
-			};
+			]
+		);
+
+		console.log("LOGIN SESSION", loginSession);
+
+		if (
+			_.get(loginSession, "userId", null) === null ||
+			_.get(loginSession, "expiredAt", null) === null
+		) {
+			throw new MoleculerError("Không tìm thấy phiên đăng nhập!", 401);
+		}
+		if (!moment(loginSession.expiredAt).isAfter(now)) {
+			throw new MoleculerError("Token đã hết hạn!", 401);
 		}
 
-		return true;
+		if (!moment(loginSession.expiredAt).isSame(tokenInfo.expiredAt)) {
+			throw new MoleculerError("Thời gian expired không đúng!", 401);
+		}
 	} catch (err) {
 		console.log("ERR", err);
-		if (err.name === "MoleculerError") throw err;
+		if (err.name === "MoleculerError") {
+			console.log("in if", err.code);
+			throw new MoleculerError(err.message, err.code);
+			// throw err;
+		}
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}
 };

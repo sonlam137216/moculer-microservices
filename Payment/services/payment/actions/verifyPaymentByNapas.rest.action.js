@@ -5,22 +5,28 @@ const MoleculerError = require("moleculer").Errors;
 module.exports = async function (ctx) {
 	try {
 		const {
-			success,
-			paymentInfo: { id },
+			response: { responseStatus, transaction },
+			paymentId,
 		} = ctx.params.body;
 
 		const updatedPayment = await this.broker.call(
 			"v1.PaymentInfoModel.findOneAndUpdate",
 			[
 				{
-					id,
+					id: paymentId,
 					status: paymentConstant.PAYMENT_STATUS.UNPAID,
 				},
 				{
-					status: success
+					status: responseStatus
 						? paymentConstant.PAYMENT_STATUS.PAID
 						: paymentConstant.PAYMENT_STATUS.FAILED,
+					supplierResponse: {
+						responseStatus,
+						transaction,
+					},
+					supplierTransaction: transaction,
 				},
+				{ new: true },
 			]
 		);
 		console.log("updatedPayment", updatedPayment);

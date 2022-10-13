@@ -1,7 +1,6 @@
 const DbService = require("moleculer-db");
 const MongooseAdapter = require("moleculer-db-adapter-mongoose");
 const MongooseAction = require("moleculer-db-adapter-mongoose-action");
-const userInfoConstant = require("./constants/userInfoConstant");
 const userInfoModel = require("./model/userInfo.model");
 
 module.exports = {

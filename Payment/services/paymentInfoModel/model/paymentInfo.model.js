@@ -34,7 +34,32 @@ const Schema = mongoose.Schema(
 			type: String,
 			required: true,
 			enum: _.values(paymentConstant.PAYMENT_STATUS),
-			default: "PENDING",
+			default: "UNPAID",
+		},
+		supplierResponse: {
+			responseStatus: {
+				type: Boolean,
+				required: true,
+				default: false,
+			},
+			transaction: {
+				transactionId: {
+					type: Number,
+				},
+				description: {
+					type: String,
+					default: "",
+				},
+			},
+		},
+		supplierTransaction: {
+			transactionId: {
+				type: Number,
+			},
+			description: {
+				type: String,
+				default: "",
+			},
 		},
 	},
 	{
@@ -43,6 +68,10 @@ const Schema = mongoose.Schema(
 		timestamps: true,
 	}
 );
+
+// indexes
+Schema.index({ id: 1 }, { unique: true, sparse: true });
+Schema.index({ userId: 1 }, { unique: false, sparse: false });
 
 // plugins
 
