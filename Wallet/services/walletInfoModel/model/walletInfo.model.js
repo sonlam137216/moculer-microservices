@@ -33,8 +33,8 @@ const Schema = mongoose.Schema(
 );
 
 // indexes
-Schema.index({ id: 1 }, { unique: true, sparse: true });
-Schema.index({ ownerId: 1 }, { unique: false, sparse: false });
+Schema.index({ id: 1 }, { unique: true, sparse: false });
+Schema.index({ ownerId: 1 }, { unique: true, sparse: false });
 
 // plugins
 

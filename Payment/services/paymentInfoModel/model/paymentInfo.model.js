@@ -70,7 +70,7 @@ const Schema = mongoose.Schema(
 );
 
 // indexes
-Schema.index({ id: 1 }, { unique: true, sparse: true });
+Schema.index({ id: 1 }, { unique: true, sparse: false });
 Schema.index({ userId: 1 }, { unique: false, sparse: false });
 
 // plugins

@@ -37,7 +37,7 @@ const Schema = mongoose.Schema(
 
 // indexes
 Schema.index({ id: 1 }, { unique: 1, sparse: false });
-Schema.index({ userId: 1 }, { unique: false, sparse: true });
+Schema.index({ userId: 1 }, { unique: false, sparse: false });
 
 // plugins
 Schema.plugin(autoIncrement.plugin, {
