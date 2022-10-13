@@ -47,7 +47,6 @@ const Schema = mongoose.Schema(
 Schema.index({ email: 1 }, { unique: true, sparse: false });
 Schema.index({ phone: 1 }, { unique: true, sparse: false });
 Schema.index({ id: 1 }, { unique: true, sparse: false });
-Schema.index({ fullName: 1 }, { index: true });
 
 // plugins
 
