@@ -24,43 +24,6 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// check login session
-		const now = new Date();
-		if (
-			existingUser.loginSession.userId === null ||
-			existingUser.loginSession.expiredAt === null
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Phiên đăng nhập đã hết, hãy đăng nhập lại!",
-				},
-			};
-		}
-
-		if (!moment(existingUser.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
-				},
-			};
-		}
-
-		// login -> logout -> login -> expired time will difference
-		if (
-			!moment(existingUser.loginSession.expiredAt).isSame(
-				moment(expiredAt)
-			)
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token không đúng thời gian expired time",
-				},
-			};
-		}
-
 		// check wallet
 		const existingWallet = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
@@ -95,6 +58,31 @@ module.exports = async function (ctx) {
 				}
 
 				// verify success
+				// create payment unpaid
+				const paymentCreate = await this.broker.call(
+					"v1.PaymentInfoModel.create",
+					[
+						{
+							userId,
+							totalPrice,
+							description,
+							note,
+							paymentMethod,
+							status: paymentConstant.PAYMENT_STATUS.UNPAID,
+						},
+					]
+				);
+
+				if (_.get(paymentCreate, "id", null) === null) {
+					return {
+						code: 1001,
+						data: {
+							message:
+								"Tạo Order không thành công, vui lòng tạo lại!",
+						},
+					};
+				}
+
 				const updatedWallet = await this.broker.call(
 					"v1.WalletInfoModel.findOneAndUpdate",
 					[
@@ -109,21 +97,44 @@ module.exports = async function (ctx) {
 					]
 				);
 
-				console.log("TOTAL PRICE", totalPrice);
+				if (_.get(updatedWallet, "id", null) === null) {
+					await this.broker.call(
+						"v1.PaymentInfoModel.findOneAndUpdate",
+						[
+							{ id: paymentCreate.id },
+							{ status: paymentConstant.PAYMENT_STATUS.FAILED },
+						]
+					);
+					return {
+						code: 1001,
+						data: {
+							message: "Cập nhật ví không thành công",
+						},
+					};
+				}
 
-				const paymentCreate = await this.broker.call(
-					"v1.PaymentInfoModel.create",
+				await this.broker.call("v1.PaymentInfoModel.findOneAndUpdate", [
+					{ id: paymentCreate.id },
+					{ status: paymentConstant.PAYMENT_STATUS.PAID },
+				]);
+
+				const paymentHistory = await this.broker.call(
+					"v1.WalletHistoryModel.create",
 					[
 						{
 							userId,
-							totalPrice,
-							description,
-							note,
-							paymentMethod,
-							status: paymentConstant.PAYMENT_STATUS.PAID,
+							walletInfoId: existingWallet.id,
+							balanceBefore: existingWallet.balanceAvailable,
+							balanceAfter: balanceAvailable,
+							transferType:
+								paymentConstant.WALLET_ACTION_TYPE.PAYMENT,
+							status: paymentConstant.WALLET_HISTORY_STATUS
+								.SUCCEEDED,
 						},
 					]
 				);
+
+				console.log("paymentHistory", paymentHistory);
 
 				isSuccess = true;
 				message = "Bạn đã thanh toán đơn hàng qua ví thành công!";

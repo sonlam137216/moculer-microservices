@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const createToken = require("../../../utils/createToken");
 const moment = require("moment");
 const userSessionConstant = require("../constants/userSession.constant");
+const md5 = require("md5");
 
 module.exports = async function (ctx) {
 	try {
@@ -24,12 +25,9 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const isMatchPassword = await bcrypt.compare(
-			password,
-			existingUser.password
-		);
+		const hashedPassword = md5(password);
 
-		if (!isMatchPassword) {
+		if (hashedPassword !== existingUser.password) {
 			return {
 				code: 1001,
 				data: {

@@ -1,16 +1,16 @@
 const _ = require("lodash");
-const MoleculerError = require("moleculer").Errors;
+const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		const { balanceAvailable, ownerId, paymentMethods } = ctx.params.body;
-		const { expiredAt } = ctx.meta.auth.credentials;
+		const { paymentMethods } = ctx.params.body;
+		const { userId } = ctx.meta.auth.credentials;
 
-		// check ownerID
+		// check userId
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
-			[{ id: ownerId }]
+			[{ id: userId }]
 		);
 
 		if (!existingUser) {
@@ -22,46 +22,10 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// check login session
-		const now = new Date();
-		if (
-			existingUser.loginSession.userId === null ||
-			existingUser.loginSession.expiredAt === null
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Phiên đăng nhập đã hết, hãy đăng nhập lại!",
-				},
-			};
-		}
-
-		if (!moment(existingUser.loginSession.expiredAt).isAfter(now)) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token đã bị hết hạn",
-				},
-			};
-		}
-
-		if (
-			!moment(existingUser.loginSession.expiredAt).isSame(
-				moment(expiredAt)
-			)
-		) {
-			return {
-				code: 1001,
-				data: {
-					message: "Token không đúng thời gian expired time",
-				},
-			};
-		}
-
 		// check exiting wallet
 		const existingWallet = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
-			[{ ownerId }]
+			[{ userId }]
 		);
 
 		if (existingWallet) {
@@ -77,8 +41,7 @@ module.exports = async function (ctx) {
 			"v1.WalletInfoModel.create",
 			[
 				{
-					balanceAvailable,
-					ownerId,
+					ownerId: userId,
 					paymentMethods,
 				},
 			]

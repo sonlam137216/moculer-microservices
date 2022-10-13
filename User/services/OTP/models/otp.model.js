@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const autoIncrement = require("mongoose-auto-increment");
+const otpConstant = require("../constants/otp.constant");
+const _ = require("lodash");
 
 autoIncrement.initialize(mongoose);
 
@@ -13,10 +15,15 @@ const Schema = mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		status: {
+			type: String,
+			required: true,
+			enum: _.values(otpConstant.OTP_STATUS),
+		},
 		time: {
 			type: Date,
 			default: Date.now,
-			index: { expires: 20 },
+			index: { expires: 60 },
 		},
 	},
 	{

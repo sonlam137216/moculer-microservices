@@ -4,13 +4,15 @@ const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
-		const { userId } = ctx.meta.auth.credentials;
+		const { userId, deviceId } = ctx.meta.auth.credentials;
 
 		const updatedUserSession = await this.broker.call(
 			"v1.UserSessionModel.findOneAndUpdate",
 			[
 				{
 					userId,
+					deviceId,
+					status: userSessionConstant.SESSION_STATUS.ACTIVE,
 				},
 				{
 					status: userSessionConstant.SESSION_STATUS.EXPIRED,

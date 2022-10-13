@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
-const JsonWebToken = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const md5 = require("md5");
+const otpConstant = require("../constants/otp.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -22,12 +22,56 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const hashedPassword = await bcrypt.hash(password, 12);
+		const existingOtp = await this.broker.call("v1.OTPModel.findOne", [
+			{ email, status: otpConstant.OTP_STATUS.ACTIVE },
+		]);
+
+		if (!existingOtp) {
+			return {
+				code: 1001,
+				data: {
+					message: "OTP không tồn tại!",
+				},
+			};
+		}
+
+		// check OTP
+		const hashOtp = md5(otp);
+
+		if (hashOtp !== existingOtp.otp) {
+			return {
+				code: 1001,
+				data: {
+					message: "OTP không trùng khớp",
+				},
+			};
+		}
+
+		const hashedPassword = md5(password);
 
 		const updatedUser = await this.broker.call(
 			"v1.UserInfoModel.findOneAndUpdate",
-			[{ id: userId }, { password: hashedPassword }]
+			[{ id: existingUser.id }, { password: hashedPassword }]
 		);
+
+		if (_.get(updatedUser, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message: "Đã xảy ra lỗi, cập nhật không thành công!",
+				},
+			};
+		}
+
+		await this.broker.call("v1.OTPModel.findOneAndUpdate", [
+			{
+				email,
+				status: otpConstant.OTP_STATUS.ACTIVE,
+			},
+			{
+				status: otpConstant.OTP_STATUS.EXPIRED,
+			},
+		]);
 
 		return {
 			code: 1000,

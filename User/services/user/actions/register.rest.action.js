@@ -1,11 +1,10 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
-const JsonWebToken = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const createToken = require("../../../utils/createToken");
 const validateEmail = require("../../../utils/validateEmail");
 const validatePhoneNumber = require("../../../utils/validatePhoneNumber");
 const moment = require("moment");
+const md5 = require("md5");
 
 module.exports = async function (ctx) {
 	try {
@@ -44,7 +43,7 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const hashedPassword = await bcrypt.hash(password, 12);
+		const hashedPassword = md5(password);
 
 		const createObj = {
 			fullName,

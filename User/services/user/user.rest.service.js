@@ -13,15 +13,15 @@ module.exports = {
 		before: {
 			getUserInfo: ["checkValidDeviceId"],
 		},
-		error: {
-			"*": function (ctx, error) {
-				return {
-					data: [],
-					succeeded: false,
-					message: error.message || String(error),
-				};
-			},
-		},
+		// error: {
+		// 	"*": function (ctx, error) {
+		// 		return {
+		// 			data: [],
+		// 			succeeded: false,
+		// 			message: error.message || String(error),
+		// 		};
+		// 	},
+		// },
 	},
 
 	methods: {
@@ -78,7 +78,6 @@ module.exports = {
 					deviceId: "string",
 				},
 			},
-
 			handler: require("./actions/login.rest.action"),
 		},
 
@@ -86,10 +85,7 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/ForgotPassword",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
@@ -106,16 +102,15 @@ module.exports = {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/External/User/ResetPassword",
-				auth: {
-					strategies: ["Default"],
-					mode: "try",
-				},
+				auth: false,
 			},
 
 			params: {
 				body: {
 					$$type: "object",
+					email: "string",
 					password: "string",
+					otp: "string",
 				},
 			},
 

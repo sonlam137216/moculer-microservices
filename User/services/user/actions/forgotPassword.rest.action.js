@@ -3,6 +3,7 @@ const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
 const md5 = require("md5");
 const generateOtp = require("../../../utils/generateOTP");
+const otpConstant = require("../constants/otp.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -22,6 +23,15 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		await this.broker.call("v1.OTPModel.updateMany", [
+			{
+				email,
+			},
+			{
+				status: otpConstant.OTP_STATUS.EXPIRED,
+			},
+		]);
+
 		const otp = generateOtp();
 		console.log("OTP", otp);
 		// hash OTP
@@ -32,6 +42,7 @@ module.exports = async function (ctx) {
 			{
 				email,
 				otp: hashOtp,
+				status: otpConstant.OTP_STATUS.ACTIVE,
 			},
 		]);
 

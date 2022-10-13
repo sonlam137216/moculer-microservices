@@ -1,11 +1,10 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
-const userSessionConstant = require("../constants/userSession.constant");
+const walletConstant = require("../constants/wallet.constant");
 
 module.exports = async function (ctx) {
 	try {
-		// return true;
 		const tokenInfo = ctx.params;
 
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
@@ -13,7 +12,7 @@ module.exports = async function (ctx) {
 		]);
 
 		if (_.get(userInfo, "id", null) === null) {
-			throw new MoleculerError("Token không hợp lệ!", 401);
+			throw new MoleculerError(401, "Token không hợp lệ!");
 		}
 
 		// check login session
@@ -23,20 +22,22 @@ module.exports = async function (ctx) {
 			[
 				{
 					userId: tokenInfo.userId,
-					deviceId: tokenInfo.deviceId,
-					status: userSessionConstant.SESSION_STATUS.ACTIVE,
+					status: walletConstant.SESSION_STATUS.ACTIVE,
 				},
 			]
 		);
-
-		console.log("LOGIN SESSION", loginSession);
-
 		if (
 			_.get(loginSession, "userId", null) === null ||
 			_.get(loginSession, "expiredAt", null) === null
 		) {
 			throw new MoleculerError("Không tìm thấy phiên đăng nhập!", 401);
+			// };
 		}
+		console.log("session", loginSession);
+		console.log("expired", loginSession.expiredAt);
+		console.log("now", now);
+
+		console.log("compare", moment(loginSession.expiredAt).isAfter(now));
 		if (!moment(loginSession.expiredAt).isAfter(now)) {
 			throw new MoleculerError("Token đã hết hạn!", 401);
 		}
@@ -44,13 +45,11 @@ module.exports = async function (ctx) {
 		if (!moment(loginSession.expiredAt).isSame(tokenInfo.expiredAt)) {
 			throw new MoleculerError("Thời gian expired không đúng!", 401);
 		}
+
+		return true;
 	} catch (err) {
 		console.log("ERR", err);
-		if (err.name === "MoleculerError") {
-			console.log("in if", err.code);
-			throw new MoleculerError(err.message, err.code);
-			// throw err;
-		}
+		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}
 };
