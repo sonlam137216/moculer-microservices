@@ -1,0 +1,7 @@
+module.exports = {
+	TRANSACTION_STATUS: {
+		PENDING: "PENDING",
+		FAILED: "FAILED",
+		SUCCEEDED: "SUCCEEDED",
+	},
+};

@@ -1,10 +1,10 @@
 const DbService = require("moleculer-db");
 const MongooseAdapter = require("moleculer-db-adapter-mongoose");
 const MongooseAction = require("moleculer-db-adapter-mongoose-action");
-const walletHistoryModel = require("./models/walletHistory.model");
+const bankInfoModel = require("./models/bankInfo.model");
 
 module.exports = {
-	name: "WalletHistoryModel",
+	name: "BankInfoModel",
 
 	version: 1,
 
@@ -18,7 +18,7 @@ module.exports = {
 
 	actions: MongooseAction(),
 
-	model: walletHistoryModel,
+	model: bankInfoModel,
 
 	/**
 	 * Events
