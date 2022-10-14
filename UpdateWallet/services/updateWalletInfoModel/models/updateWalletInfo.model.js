@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const mongoose = require("mongoose");
 const autoIncrement = require("mongoose-auto-increment");
-const walletHistoryConstant = require("../constants/walletHistory.constant");
+const updateWalletInfoModelConstant = require("../constants/updateWalletInfoModel.constant");
 
 autoIncrement.initialize(mongoose);
 
@@ -11,7 +11,7 @@ const Schema = mongoose.Schema(
 			type: Number,
 			required: true,
 		},
-		walletInfoId: {
+		walletId: {
 			type: Number,
 			required: true,
 		},
@@ -23,20 +23,39 @@ const Schema = mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		transactionAmount: {
+			type: Number,
+			required: true,
+		},
 		transferType: {
 			type: String,
 			required: true,
-			enum: _.values(walletHistoryConstant.WALLET_ACTION_TYPE),
+			enum: _.values(updateWalletInfoModelConstant.WALLET_ACTION_TYPE),
+		},
+		transactionInfo: {
+			transactionId: {
+				type: String,
+			},
+			transactionAmount: {
+				type: Number,
+			},
+			status: {
+				type: String,
+				enum: _.values(
+					updateWalletInfoModelConstant.TRANSACTION_STATUS
+				),
+			},
 		},
 		status: {
 			type: String,
 			required: true,
-			enum: _.values(walletHistoryConstant.WALLET_HISTORY_STATUS),
-			default: walletHistoryConstant.WALLET_HISTORY_STATUS.PENDING,
+			enum: _.values(updateWalletInfoModelConstant.WALLET_HISTORY_STATUS),
+			default:
+				updateWalletInfoModelConstant.WALLET_HISTORY_STATUS.PENDING,
 		},
 	},
 	{
-		collection: "Service_WalletHistory",
+		collection: "Service_UpdateWalletInfo",
 		versionKey: false,
 		timestamps: true,
 	}
@@ -55,5 +74,5 @@ Schema.plugin(autoIncrement.plugin, {
 });
 
 module.exports =
-	mongoose.models.Service_WalletHistory ||
+	mongoose.models.Service_UpdateWalletInfo ||
 	mongoose.model(Schema.options.collection, Schema);

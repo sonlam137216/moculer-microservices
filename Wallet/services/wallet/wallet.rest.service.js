@@ -4,8 +4,19 @@
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
 
+const moleculerRabbitmq = require("moleculer-rabbitmq");
+
+const queueMixin = moleculerRabbitmq({
+	connection: process.env.RABBITMQ_URI,
+	asyncActions: true,
+});
+
 module.exports = {
 	name: "Wallet",
+
+	version: 1,
+
+	mixins: [queueMixin],
 
 	/**
 	 * Settings
@@ -81,14 +92,14 @@ module.exports = {
 			},
 			timeout: 60000,
 
-			rest: {
-				method: "POST",
-				fullPath: "/v1/External/Wallet/UpdateWallet",
-				auth: {
-					strategies: ["Default"],
-					mode: "required",
-				},
-			},
+			// rest: {
+			// 	method: "POST",
+			// 	fullPath: "/v1/External/Wallet/UpdateWallet",
+			// 	auth: {
+			// 		strategies: ["Default"],
+			// 		mode: "required",
+			// 	},
+			// },
 
 			params: {},
 

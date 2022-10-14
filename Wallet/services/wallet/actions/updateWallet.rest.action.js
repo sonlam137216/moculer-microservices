@@ -6,12 +6,12 @@ const walletConstant = require("../constants/wallet.constant");
 module.exports = async function (ctx) {
 	let lock;
 	try {
-		const { userId } = ctx.meta.auth.credentials;
+		const {
+			updatedTransaction: { transferType, transactionAmount },
+			userId,
+		} = ctx.params;
 
 		lock = await this.broker.cacher.lock(`accountId_${userId}`, 60 * 1000);
-
-		// type is methods update 'ADD' | 'SUB'
-		const { type, amount } = ctx.params.body;
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -46,9 +46,10 @@ module.exports = async function (ctx) {
 		let balanceAvailable = walletInfo.balanceAvailable;
 		let isValidBalance = true;
 
-		switch (type) {
+		switch (transferType) {
 			case walletConstant.WALLET_ACTION_TYPE.ADD: {
-				balanceAvailable = walletInfo.balanceAvailable + amount;
+				balanceAvailable =
+					walletInfo.balanceAvailable + transactionAmount;
 				message = "Cộng tiền ví thành công!";
 
 				// await new Promise((resolve) => {
@@ -60,7 +61,8 @@ module.exports = async function (ctx) {
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.SUB: {
-				balanceAvailable = walletInfo.balanceAvailable - amount;
+				balanceAvailable =
+					walletInfo.balanceAvailable - transactionAmount;
 
 				if (balanceAvailable < 0) {
 					isValidBalance = false;
@@ -78,29 +80,6 @@ module.exports = async function (ctx) {
 		}
 
 		if (isValidBalance) {
-			const walletHistory = await this.broker.call(
-				"v1.WalletHistoryModel.create",
-				[
-					{
-						userId,
-						walletInfoId: walletInfo.id,
-						balanceBefore: walletInfo.balanceAvailable,
-						balanceAfter: balanceAvailable,
-						transferType: type,
-						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
-					},
-				]
-			);
-
-			if (!_.get(walletHistory, "id", null) === null) {
-				return {
-					code: 1001,
-					data: {
-						message: "Tạo lịch sử không thành công!",
-					},
-				};
-			}
-
 			const updatedWalletInfo = await this.broker.call(
 				"v1.WalletInfoModel.findOneAndUpdate",
 				[
@@ -118,40 +97,13 @@ module.exports = async function (ctx) {
 			);
 
 			if (!_.get(updatedWalletInfo, "id", null) === null) {
-				await this.broker.call(
-					"v1.WalletHistoryModel.findOneAndUpdate",
-					[
-						{
-							id: walletHistory.id,
-						},
-						{
-							status: walletConstant.WALLET_HISTORY_STATUS.FAILED,
-						},
-						{
-							new: true,
-						},
-					]
-				);
-
 				return {
 					code: 1001,
 					data: {
-						message: "Tạo lịch sử không thành công!",
+						message: "Không thể cập nhật thông tin ví!",
 					},
 				};
 			}
-
-			await this.broker.call("v1.WalletHistoryModel.findOneAndUpdate", [
-				{
-					id: walletHistory.id,
-				},
-				{
-					status: walletConstant.WALLET_HISTORY_STATUS.SUCCEEDED,
-				},
-				{
-					new: true,
-				},
-			]);
 
 			// udate thành công
 			return {
@@ -175,8 +127,7 @@ module.exports = async function (ctx) {
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	} finally {
 		if (_.isFunction(lock)) {
-			// console.log("LOCK", lock);
-			// await this.broker.cacher.clean(`accountId_${accountId}`);
+			await this.broker.cacher.clean(`accountId_${accountId}`);
 			lock();
 		}
 	}
