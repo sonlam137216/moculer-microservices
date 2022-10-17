@@ -7,10 +7,6 @@ autoIncrement.initialize(mongoose);
 
 const Schema = mongoose.Schema(
 	{
-		userId: {
-			type: Number,
-			required: true,
-		},
 		walletIdOfSender: {
 			type: Number,
 			required: true,
@@ -53,13 +49,6 @@ const Schema = mongoose.Schema(
 					updateWalletInfoModelConstant.TRANSACTION_STATUS
 				),
 			},
-		},
-		status: {
-			type: String,
-			required: true,
-			enum: _.values(updateWalletInfoModelConstant.WALLET_HISTORY_STATUS),
-			default:
-				updateWalletInfoModelConstant.WALLET_HISTORY_STATUS.PENDING,
 		},
 	},
 	{

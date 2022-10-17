@@ -62,16 +62,26 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		if (existingSenderWallet.balanceAvailable - amount < 0) {
+			return {
+				code: 1001,
+				data: {
+					message:
+						"Tài khoản không đủ, vui lòng nạp thêm tiền vào tài khoản!",
+				},
+			};
+		}
+
 		// create local transaction
 		const randomTransactionId = generateTransactionId();
 		const transactionCreateObj = {
-			userId,
 			walletIdOfSender: existingSenderWallet.id,
 			walletIdOfReceiver: existingReceiverWallet.id,
 			transactionInfo: {
 				transactionId: randomTransactionId,
 				transactionAmount: amount,
 				status: updateWalletConstant.TRANSACTION_STATUS.PENDING,
+				transferType: updateWalletConstant.WALLET_ACTION_TYPE.TRANSFER,
 			},
 		};
 		const transactionCreate = await this.broker.call(
@@ -90,9 +100,9 @@ module.exports = async function (ctx) {
 
 		const otp = generateOTP();
 		const hashedOtp = md5(otp);
-		// save OTP
 
-		const otpUpdated = await this.broker.call("v1.OTPModel.UpdateMany", [
+		// save OTP
+		const otpUpdated = await this.broker.call("v1.OTPModel.updateMany", [
 			{
 				userId,
 				status: updateWalletConstant.OTP_STATUS.ACTIVE,
@@ -135,6 +145,7 @@ module.exports = async function (ctx) {
 				message:
 					"Tạo transaction thành công, vui lòng nhập OTP để xác nhận giao dịch!",
 				otp,
+				transactionInfo: transactionCreate,
 			},
 		};
 	} catch (err) {

@@ -6,6 +6,7 @@ const walletConstant = require("../constants/wallet.constant");
 module.exports = async function (ctx) {
 	try {
 		// return true;
+
 		const tokenInfo = ctx.params;
 
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
@@ -28,8 +29,6 @@ module.exports = async function (ctx) {
 				},
 			]
 		);
-
-		console.log("LOGIN SESSION", loginSession);
 
 		if (
 			_.get(loginSession, "userId", null) === null ||

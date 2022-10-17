@@ -1,7 +1,5 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
-const JsonWebToken = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const createToken = require("../../../utils/createToken");
 const moment = require("moment");
 const userSessionConstant = require("../constants/userSession.constant");
@@ -24,8 +22,7 @@ module.exports = async function (ctx) {
 				},
 			};
 		}
-
-		const hashedPassword = md5(password);
+		const hashedPassword = md5(password + this.settings.salt);
 
 		if (hashedPassword !== existingUser.password) {
 			return {
