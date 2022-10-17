@@ -9,13 +9,4 @@ module.exports = {
 		SUB: "SUB",
 		PAYMENT: "PAYMENT",
 	},
-	TRANSACTION_STATUS: {
-		PENDING: "PENDING",
-		SUCCEEDED: "SUCCEEDED",
-		FAILED: "FAILED",
-	},
-	OTP_STATUS: {
-		ACTIVE: "ACTIVE",
-		EXPIRED: "EXPIRED",
-	},
 };
