@@ -5,7 +5,9 @@ module.exports = {
 
 	version: 1,
 
-	settings: {},
+	settings: {
+		salt: "secret_salt",
+	},
 
 	dependencies: [],
 

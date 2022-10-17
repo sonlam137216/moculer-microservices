@@ -8,6 +8,8 @@ module.exports = async function (ctx) {
 		const { userId } = ctx.meta.auth.credentials;
 		const { otp, transactionId } = ctx.params.body;
 
+		console.log(ctx.service.name);
+
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
 			[
@@ -30,14 +32,14 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOne",
 			[
 				{
-					userId,
+					walletIdOfSender: existingUser.id,
+					walletIdOfReceiver: existingUser.id,
+					"transactionInfo.status":
+						updateWalletConstant.TRANSACTION_STATUS.PENDING,
 					"transactionInfo.transactionId": transactionId,
 				},
 			]
 		);
-
-		console.log("transactionId", transactionId);
-		console.log("existingTransaction", existingTransaction);
 
 		if (_.get(existingTransaction, "id", null) === null) {
 			return {
@@ -52,7 +54,9 @@ module.exports = async function (ctx) {
 			"http://localhost:3000/v1/External/Bank/VerifyRequestPayment",
 			{
 				otp,
-				transactionId,
+				transactionId:
+					existingTransaction.transactionInfoFromSupplier
+						.transactionId,
 			}
 		);
 
@@ -71,7 +75,7 @@ module.exports = async function (ctx) {
 		}
 
 		const { success } = verifyTransactionFromBank.data;
-		// const { transactionId } =
+
 		// verifyTransactionFromBank.data.data.transactionInfo;
 		console.log("SUCCESS", success);
 
@@ -80,12 +84,18 @@ module.exports = async function (ctx) {
 				"v1.UpdateWalletInfoModel.findOneAndUpdate",
 				[
 					{
-						id: existingTransaction.id,
+						walletIdOfSender: existingUser.id,
+						walletIdOfReceiver: existingUser.id,
+						"transactionInfo.status":
+							updateWalletConstant.TRANSACTION_STATUS.PENDING,
 						"transactionInfo.transactionId": transactionId,
 					},
 					{
-						status: updateWalletConstant.WALLET_HISTORY_STATUS
-							.SUCCEEDED,
+						$set: {
+							"transactionInfo.status":
+								updateWalletConstant.TRANSACTION_STATUS
+									.SUCCEEDED,
+						},
 					},
 				]
 			);
@@ -101,7 +111,12 @@ module.exports = async function (ctx) {
 			}
 
 			await this.broker.call("v1.Wallet.updateWallet.async", {
-				params: { updatedTransaction, userId },
+				params: {
+					transactionInfo: updatedTransaction,
+					receiverId: userId,
+					senderId: userId,
+					serviceName: ctx.service.name,
+				},
 			});
 
 			return {

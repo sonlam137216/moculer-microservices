@@ -11,7 +11,7 @@ const Schema = mongoose.Schema(
 			type: Number,
 			required: true,
 		},
-		walletInfoId: {
+		walletId: {
 			type: Number,
 			required: true,
 		},
@@ -27,6 +27,10 @@ const Schema = mongoose.Schema(
 			type: String,
 			required: true,
 			enum: _.values(walletHistoryConstant.WALLET_ACTION_TYPE),
+		},
+		transactionId: {
+			type: String,
+			required: true,
 		},
 		status: {
 			type: String,

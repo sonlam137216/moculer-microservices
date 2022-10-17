@@ -84,6 +84,49 @@ module.exports = {
 			handler: require("./actions/verifyTransaction.rest.action"),
 		},
 
+		transferWalletToWallet: {
+			rest: {
+				method: "POST",
+				fullPath: "/v1/External/UpdateWallet/TransferWalletToWallet",
+				auth: {
+					strategies: ["Default"],
+					mode: "required",
+				},
+			},
+
+			params: {
+				body: {
+					$$type: "object",
+					receiverId: "number",
+					amount: "number",
+				},
+			},
+
+			handler: require("./actions/transferWalletToWallet.rest.action"),
+		},
+
+		verifyOtpWalletToWallet: {
+			rest: {
+				method: "POST",
+				fullPath: "/v1/External/UpdateWallet/VerifyOtpWalletToWallet",
+				auth: {
+					strategies: ["Default"],
+					mode: "required",
+				},
+			},
+
+			params: {
+				body: {
+					$$type: "object",
+					otp: "string",
+					transactionId: "string",
+					receiverId: "number",
+				},
+			},
+
+			handler: require("./actions/verifyOtpWalletToWallet.rest.action"),
+		},
+
 		/**
 		 * Welcome, a username
 		 *

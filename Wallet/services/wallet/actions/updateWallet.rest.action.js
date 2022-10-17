@@ -4,52 +4,138 @@ const moment = require("moment");
 const walletConstant = require("../constants/wallet.constant");
 
 module.exports = async function (ctx) {
+	console.log("CTX", ctx);
 	let lock;
+	let accountId;
 	try {
 		const {
-			updatedTransaction: { transferType, transactionAmount },
-			userId,
+			transactionInfo: {
+				transactionInfo: {
+					transferType,
+					transactionAmount,
+					transactionId,
+				},
+				walletIdOfSender,
+				walletIdOfReceiver,
+			},
+			receiverId,
+			senderId,
+			serviceName,
 		} = ctx.params;
 
-		lock = await this.broker.cacher.lock(`accountId_${userId}`, 60 * 1000);
-
-		const existingUser = await this.broker.call(
-			"v1.UserInfoModel.findOne",
-			[{ id: userId }]
-		);
-
-		if (!existingUser) {
+		if (!walletConstant.SERVICE_NAME_LIST[serviceName]) {
 			return {
 				code: 1001,
 				data: {
-					message: "User không tồn tại",
+					message: "Service không có trong danh sách",
+				},
+			};
+		}
+
+		accountId = receiverId;
+
+		// lock
+		lock = await this.broker.cacher.lock(
+			`accountId_${accountId}`,
+			60 * 1000
+		);
+
+		const existingSenderUser = await this.broker.call(
+			"v1.UserInfoModel.findOne",
+			[{ id: senderId }]
+		);
+
+		if (!existingSenderUser) {
+			return {
+				code: 1001,
+				data: {
+					message: "Sender user không tồn tại",
+				},
+			};
+		}
+
+		const existingReceiverUser = await this.broker.call(
+			"v1.UserInfoModel.findOne",
+			[{ id: receiverId }]
+		);
+
+		if (!existingReceiverUser) {
+			return {
+				code: 1001,
+				data: {
+					message: "Sender user không tồn tại",
 				},
 			};
 		}
 
 		// check existing wallet
-		const walletInfo = await this.broker.call(
+		const walletSenderInfo = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
-			[{ ownerId: userId }]
+			[{ id: walletIdOfSender }]
 		);
 
-		if (!walletInfo) {
+		if (!walletSenderInfo) {
 			return {
 				code: 1001,
 				data: {
-					message: "User chưa tạo ví",
+					message: "Sender chưa tạo ví",
 				},
 			};
 		}
 
+		const walletReceiverInfo = await this.broker.call(
+			"v1.WalletInfoModel.findOne",
+			[{ id: walletIdOfReceiver }]
+		);
+
+		if (!walletReceiverInfo) {
+			return {
+				code: 1001,
+				data: {
+					message: "Receiver chưa tạo ví",
+				},
+			};
+		}
+
+		console.log("walletSenderInfo", walletSenderInfo);
+		console.log("walletReceiverInfo", walletReceiverInfo);
+
 		let message = "Cập nhật tiền ví không thành công";
-		let balanceAvailable = walletInfo.balanceAvailable;
+		let balanceAvailableOfSender = walletSenderInfo.balanceAvailable;
+		let balanceAvailableOfReceiver = walletReceiverInfo.balanceAvailable;
+		let walletHistoryOfSender;
+		let walletHistoryOfReceiver;
 		let isValidBalance = true;
 
 		switch (transferType) {
 			case walletConstant.WALLET_ACTION_TYPE.ADD: {
-				balanceAvailable =
-					walletInfo.balanceAvailable + transactionAmount;
+				balanceAvailableOfReceiver =
+					walletReceiverInfo.balanceAvailable + transactionAmount;
+				walletHistoryOfReceiver = await this.broker.call(
+					"v1.WalletHistoryModel.create",
+					[
+						{
+							userId: receiverId,
+							walletId: walletIdOfReceiver,
+							balanceBefore: walletReceiverInfo.balanceAvailable,
+							balanceAfter: balanceAvailableOfReceiver,
+							transferType: walletConstant.WALLET_ACTION_TYPE.ADD,
+							transactionId,
+							status: walletConstant.WALLET_HISTORY_STATUS
+								.PENDING,
+						},
+					]
+				);
+
+				if (_.get(walletHistoryOfReceiver, "id", null) === null) {
+					return {
+						code: 1001,
+						data: {
+							message: "Tạo lịch sử không thành công!",
+						},
+					};
+				}
+
 				message = "Cộng tiền ví thành công!";
 
 				// await new Promise((resolve) => {
@@ -60,9 +146,57 @@ module.exports = async function (ctx) {
 				// });
 				break;
 			}
+			case walletConstant.WALLET_ACTION_TYPE.TRANSFER: {
+				balanceAvailableOfSender =
+					walletSenderInfo.balanceAvailable - transactionAmount;
+
+				balanceAvailableOfReceiver =
+					walletReceiverInfo.balanceAvailable + transactionAmount;
+
+				// history of sender
+				walletHistoryOfSender = await this.broker.call(
+					"v1.WalletHistoryModel.create",
+					[
+						{
+							userId: senderId,
+							walletId: walletIdOfSender,
+							balanceBefore: walletSenderInfo.balanceAvailable,
+							balanceAfter: balanceAvailableOfSender,
+							transferType:
+								walletConstant.WALLET_ACTION_TYPE.TRANSFER,
+							transactionId,
+							status: walletConstant.WALLET_HISTORY_STATUS
+								.PENDING,
+						},
+					]
+				);
+				// history of receiver
+				walletHistoryOfReceiver = await this.broker.call(
+					"v1.WalletHistoryModel.create",
+					[
+						{
+							userId: receiverId,
+							walletId: walletIdOfReceiver,
+							balanceBefore: walletReceiverInfo.balanceAvailable,
+							balanceAfter: balanceAvailableOfReceiver,
+							transferType:
+								walletConstant.WALLET_ACTION_TYPE.TRANSFER,
+							transactionId,
+							status: walletConstant.WALLET_HISTORY_STATUS
+								.PENDING,
+						},
+					]
+				);
+
+				console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
+
+				message = "Chuyển tiền thành công!";
+				break;
+			}
 			case walletConstant.WALLET_ACTION_TYPE.SUB: {
-				balanceAvailable =
-					walletInfo.balanceAvailable - transactionAmount;
+				walletHistoryOfReceiver =
+					walletHistoryOfReceiver.balanceAvailable -
+					transactionAmount;
 
 				if (balanceAvailable < 0) {
 					isValidBalance = false;
@@ -70,6 +204,33 @@ module.exports = async function (ctx) {
 				} else {
 					message = "Trừ tiền ví thành công!";
 				}
+
+				// create history
+				walletHistoryOfReceiver = await this.broker.call(
+					"v1.WalletHistoryModel.create",
+					[
+						{
+							userId: receiverId,
+							walletId: walletIdOfReceiver,
+							balanceBefore: walletReceiverInfo.balanceAvailable,
+							balanceAfter: balanceAvailableOfReceiver,
+							transferType: walletConstant.WALLET_ACTION_TYPE.SUB,
+							transactionId,
+							status: walletConstant.WALLET_HISTORY_STATUS
+								.PENDING,
+						},
+					]
+				);
+
+				if (_.get(walletHistoryOfReceiver, "id", null) === null) {
+					return {
+						code: 1001,
+						data: {
+							message: "Tạo lịch sử không thành công!",
+						},
+					};
+				}
+
 				break;
 			}
 			default: {
@@ -80,23 +241,112 @@ module.exports = async function (ctx) {
 		}
 
 		if (isValidBalance) {
-			const updatedWalletInfo = await this.broker.call(
-				"v1.WalletInfoModel.findOneAndUpdate",
-				[
-					{
-						id: walletInfo.id,
-						ownerId: userId,
-					},
-					{
-						balanceAvailable,
-					},
-					{
-						new: true,
-					},
-				]
-			);
+			let updatedWalletSenderInfo;
+			let updatedWalletReceiverInfo;
 
-			if (!_.get(updatedWalletInfo, "id", null) === null) {
+			if (transferType === walletConstant.WALLET_ACTION_TYPE.TRANSFER) {
+				updatedWalletSenderInfo = await this.broker.call(
+					"v1.WalletInfoModel.findOneAndUpdate",
+					[
+						{
+							id: walletSenderInfo.id,
+							ownerId: senderId,
+						},
+						{
+							balanceAvailable: balanceAvailableOfSender,
+						},
+						{
+							new: true,
+						},
+					]
+				);
+
+				updatedWalletReceiverInfo = await this.broker.call(
+					"v1.WalletInfoModel.findOneAndUpdate",
+					[
+						{
+							id: walletReceiverInfo.id,
+							ownerId: receiverId,
+						},
+						{
+							balanceAvailable: balanceAvailableOfReceiver,
+						},
+						{
+							new: true,
+						},
+					]
+				);
+			} else {
+				updatedWalletReceiverInfo = await this.broker.call(
+					"v1.WalletInfoModel.findOneAndUpdate",
+					[
+						{
+							id: walletReceiverInfo.id,
+							ownerId: receiverId,
+						},
+						{
+							balanceAvailable: balanceAvailableOfReceiver,
+						},
+						{
+							new: true,
+						},
+					]
+				);
+			}
+
+			console.log("updatedWalletSenderInfo", updatedWalletSenderInfo);
+			console.log("updatedWalletReceiverInfo", updatedWalletReceiverInfo);
+
+			if (_.get(updatedWalletReceiverInfo, "id", null) !== null) {
+				// update histories
+				if (_.get(walletHistoryOfSender, "id", null) !== null) {
+					walletHistoryOfSender = await this.broker.call(
+						"v1.WalletHistoryModel.findOneAndUpdate",
+						[
+							{
+								userId: senderId,
+								walletId: walletIdOfSender,
+								status: walletConstant.WALLET_HISTORY_STATUS
+									.PENDING,
+								transactionId,
+							},
+							{
+								status: walletConstant.WALLET_HISTORY_STATUS
+									.SUCCEEDED,
+							},
+							{
+								new: true,
+							},
+						]
+					);
+				}
+
+				if (_.get(walletHistoryOfReceiver, "id", null) !== null) {
+					walletHistoryOfReceiver = await this.broker.call(
+						"v1.WalletHistoryModel.findOneAndUpdate",
+						[
+							{
+								userId: receiverId,
+								walletId: walletIdOfReceiver,
+								status: walletConstant.WALLET_HISTORY_STATUS
+									.PENDING,
+								transactionId,
+							},
+							{
+								status: walletConstant.WALLET_HISTORY_STATUS
+									.SUCCEEDED,
+							},
+							{
+								new: true,
+							},
+						]
+					);
+				}
+
+				console.log("====================================");
+				console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
+				console.log("====================================");
+
 				return {
 					code: 1001,
 					data: {
@@ -105,14 +355,49 @@ module.exports = async function (ctx) {
 				};
 			}
 
+			console.log("walletHistoryOfSender", walletHistoryOfSender);
+			console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
+
 			// udate thành công
 			return {
 				code: 1000,
 				data: {
 					message,
-					walletInfo: updatedWalletInfo,
+					walletInfo: updatedWalletReceiverInfo,
 				},
 			};
+		}
+
+		if (_.get(walletHistoryOfSender, "id", null) !== null) {
+			walletHistoryOfSender = await this.broker.call(
+				"v1.WalletHistoryModel.findOneAndUpdate",
+				[
+					{
+						userId: senderId,
+						walletId: walletIdOfSender,
+						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
+					},
+					{
+						status: walletConstant.WALLET_HISTORY_STATUS.FAILED,
+					},
+				]
+			);
+		}
+
+		if (_.get(walletHistoryOfReceiver, "id", null) !== null) {
+			walletHistoryOfReceiver = await this.broker.call(
+				"v1.WalletHistoryModel.findOneAndUpdate",
+				[
+					{
+						userId: receiverId,
+						walletId: walletIdOfReceiver,
+						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
+					},
+					{
+						status: walletConstant.WALLET_HISTORY_STATUS.FAILED,
+					},
+				]
+			);
 		}
 
 		return {

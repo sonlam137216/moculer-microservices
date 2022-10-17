@@ -43,7 +43,7 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const hashedPassword = md5(password);
+		const hashedPassword = md5(password + this.settings.salt);
 
 		const createObj = {
 			fullName,

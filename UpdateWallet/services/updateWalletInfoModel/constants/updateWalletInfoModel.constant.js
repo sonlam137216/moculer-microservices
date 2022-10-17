@@ -8,6 +8,7 @@ module.exports = {
 		ADD: "ADD",
 		SUB: "SUB",
 		PAYMENT: "PAYMENT",
+		TRANSFER: "TRANSFER",
 	},
 	TRANSACTION_STATUS: {
 		PENDING: "PENDING",

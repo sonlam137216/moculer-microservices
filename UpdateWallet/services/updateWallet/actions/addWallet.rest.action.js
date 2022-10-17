@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const _ = require("lodash");
+const generateTransactionId = require("../../../utils/generateTransactionId");
 const updateWalletConstant = require("../constant/updateWallet.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
@@ -40,36 +41,36 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		let balanceAvailable =
-			existingWallet.balanceAvailable + transactionAmount;
-
-		const updateWalletInfo = await this.broker.call(
+		// create local transaction
+		const randomTransactionId = generateTransactionId();
+		const transactionCreateObj = {
+			walletIdOfSender: existingWallet.id,
+			walletIdOfReceiver: existingWallet.id,
+			transactionInfo: {
+				transactionId: randomTransactionId,
+				transactionAmount,
+				status: updateWalletConstant.TRANSACTION_STATUS.PENDING,
+				transferType: updateWalletConstant.WALLET_ACTION_TYPE.ADD,
+			},
+		};
+		const transactionCreate = await this.broker.call(
 			"v1.UpdateWalletInfoModel.create",
-			[
-				{
-					userId,
-					walletId: existingWallet.id,
-					balanceBefore: existingWallet.balanceAvailable,
-					balanceAfter: balanceAvailable,
-					transferType: updateWalletConstant.WALLET_ACTION_TYPE.ADD,
-					transactionAmount,
-					status: updateWalletConstant.WALLET_HISTORY_STATUS.PENDING,
-				},
-			]
+			[transactionCreateObj]
 		);
 
-		if (_.get(updateWalletInfo, "id", null) === null) {
+		console.log("transactionCreate", transactionCreate);
+
+		if (_.get(transactionCreate, "id", null) === null) {
 			return {
 				code: 1001,
 				data: {
-					message:
-						"Cập nhật thông tin không thành công, vui lòng thử lại!",
+					message: "Tạo transaction không thành công!",
 				},
 			};
 		}
 
 		const userInfo = _.pick(existingUser, ["id", "email", "phone"]);
-		const walletInfo = _.pick(updateWalletInfo, [
+		const walletInfo = _.pick(transactionCreate, [
 			"id",
 			"transferType",
 			"transactionAmount",
@@ -78,6 +79,11 @@ module.exports = async function (ctx) {
 		const transactionResponseFromBank = await axios.post(
 			"http://localhost:3000/v1/External/Bank/CreateRequestPayment",
 			{ phone: userInfo.phone, transactionAmount }
+		);
+
+		console.log(
+			"transactionResponseFromBank",
+			transactionResponseFromBank.data.data
 		);
 
 		if (!transactionResponseFromBank) {
@@ -94,12 +100,14 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOneAndUpdate",
 			[
 				{
-					id: updateWalletInfo.id,
-					userId,
-					status: updateWalletConstant.WALLET_HISTORY_STATUS.PENDING,
+					walletIdOfSender: existingUser.id,
+					walletIdOfReceiver: existingUser.id,
+					"transactionInfo.status":
+						updateWalletConstant.TRANSACTION_STATUS.PENDING,
+					"transactionInfo.transactionId": randomTransactionId,
 				},
 				{
-					transactionInfo: {
+					transactionInfoFromSupplier: {
 						transactionId:
 							transactionResponseFromBank.data.data
 								.transactionInfo.transactionId,
@@ -112,6 +120,8 @@ module.exports = async function (ctx) {
 				},
 			]
 		);
+
+		console.log("updatedTransaction", updatedTransaction);
 
 		if (_.get(updatedTransaction, "id", null) === null) {
 			return {
@@ -128,8 +138,8 @@ module.exports = async function (ctx) {
 				message: "Gửi thông tin qua ngân hàng!",
 				userInfo,
 				walletInfo,
-				responseFromBank:
-					transactionResponseFromBank.data.data.transactionInfo,
+				transactionInfo: updatedTransaction,
+				responseFromBank: transactionResponseFromBank.data.data,
 			},
 		};
 	} catch (err) {
