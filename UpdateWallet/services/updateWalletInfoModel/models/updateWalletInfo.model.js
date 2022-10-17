@@ -11,28 +11,36 @@ const Schema = mongoose.Schema(
 			type: Number,
 			required: true,
 		},
-		walletId: {
+		walletIdOfSender: {
 			type: Number,
 			required: true,
 		},
-		balanceBefore: {
+		walletIdOfReceiver: {
 			type: Number,
 			required: true,
-		},
-		balanceAfter: {
-			type: Number,
-			required: true,
-		},
-		transactionAmount: {
-			type: Number,
-			required: true,
-		},
-		transferType: {
-			type: String,
-			required: true,
-			enum: _.values(updateWalletInfoModelConstant.WALLET_ACTION_TYPE),
 		},
 		transactionInfo: {
+			transactionId: {
+				type: String,
+			},
+			transactionAmount: {
+				type: Number,
+			},
+			status: {
+				type: String,
+				enum: _.values(
+					updateWalletInfoModelConstant.TRANSACTION_STATUS
+				),
+			},
+			transferType: {
+				type: String,
+				required: true,
+				enum: _.values(
+					updateWalletInfoModelConstant.WALLET_ACTION_TYPE
+				),
+			},
+		},
+		transactionInfoFromSupplier: {
 			transactionId: {
 				type: String,
 			},

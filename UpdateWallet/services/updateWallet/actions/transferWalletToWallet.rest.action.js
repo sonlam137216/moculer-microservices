@@ -1,10 +1,14 @@
 const _ = require("lodash");
+const generateOTP = require("../../../utils/generateOTP");
+const generateTransactionId = require("../../../utils/generateTransactionId");
+const updateWalletConstant = require("../constant/updateWallet.constant");
 const { MoleculerError } = require("moleculer").Errors;
+const md5 = require("md5");
 
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
-		const { receiverId } = ctx.params.body;
+		const { receiverId, amount } = ctx.params.body;
 
 		const existingSenderUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -58,10 +62,81 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		// create transaction
+		// create local transaction
+		const randomTransactionId = generateTransactionId();
+		const transactionCreateObj = {
+			userId,
+			walletIdOfSender: existingSenderWallet.id,
+			walletIdOfReceiver: existingReceiverWallet.id,
+			transactionInfo: {
+				transactionId: randomTransactionId,
+				transactionAmount: amount,
+				status: updateWalletConstant.TRANSACTION_STATUS.PENDING,
+			},
+		};
 		const transactionCreate = await this.broker.call(
-			"v1.UpdateWalletInfoModel.create"
+			"v1.UpdateWalletInfoModel.create",
+			[transactionCreateObj]
 		);
+
+		if (_.get(transactionCreate, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message: "Tạo transaction không thành công!",
+				},
+			};
+		}
+
+		const otp = generateOTP();
+		const hashedOtp = md5(otp);
+		// save OTP
+
+		const otpUpdated = await this.broker.call("v1.OTPModel.UpdateMany", [
+			{
+				userId,
+				status: updateWalletConstant.OTP_STATUS.ACTIVE,
+			},
+			{
+				status: updateWalletConstant.OTP_STATUS.EXPIRED,
+			},
+		]);
+
+		if (!otpUpdated) {
+			return {
+				code: 1001,
+				data: {
+					message: "Cập nhật OTP không thành công, vui lòng thử lại!",
+				},
+			};
+		}
+
+		const otpCreate = await this.broker.call("v1.OTPModel.create", [
+			{
+				userId,
+				otp: hashedOtp,
+				transactionId: transactionCreate.transactionInfo.transactionId,
+				status: updateWalletConstant.OTP_STATUS.ACTIVE,
+			},
+		]);
+
+		if (_.get(otpCreate, "id", null) === null) {
+			return {
+				code: 1001,
+				data: {
+					message: "Tạo OTP không thành công, vui lòng thử lại!",
+				},
+			};
+		}
+		// return OTP
+		return {
+			code: 1000,
+			data: {
+				message:
+					"Tạo transaction thành công, vui lòng nhập OTP để xác nhận giao dịch!",
+				otp,
+			},
+		};
 	} catch (err) {
 		console.log("ERR", err);
 		if (err.name === "MoleculerError") throw err;
