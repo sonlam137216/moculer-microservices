@@ -25,10 +25,9 @@ module.exports = async function (ctx) {
 		}
 
 		// check wallet
-		const existingWallet = await this.broker.call(
-			"v1.WalletInfoModel.findOne",
-			[{ ownerId: userId }]
-		);
+		const existingWallet = await this.broker.call("v1.Wallet.findWallet", {
+			userId,
+		});
 
 		if (!existingWallet) {
 			return {
@@ -83,21 +82,15 @@ module.exports = async function (ctx) {
 					};
 				}
 
+				// call to UpdateWallet service
 				const updatedWallet = await this.broker.call(
-					"v1.WalletInfoModel.findOneAndUpdate",
-					[
-						{
-							id: existingWallet.id,
-							ownerId: userId,
-						},
-						{
-							balanceAvailable,
-						},
-						{ new: true },
-					]
+					"v1.UpdateWallet.withDrawForPayment",
+					{ transactionAmount: totalPrice, userId }
 				);
 
-				if (_.get(updatedWallet, "id", null) === null) {
+				console.log("updatedWallet", updatedWallet);
+
+				if (!updatedWallet) {
 					await this.broker.call(
 						"v1.PaymentInfoModel.findOneAndUpdate",
 						[
@@ -117,24 +110,6 @@ module.exports = async function (ctx) {
 					{ id: paymentCreate.id },
 					{ status: paymentConstant.PAYMENT_STATUS.PAID },
 				]);
-
-				const paymentHistory = await this.broker.call(
-					"v1.WalletHistoryModel.create",
-					[
-						{
-							userId,
-							walletInfoId: existingWallet.id,
-							balanceBefore: existingWallet.balanceAvailable,
-							balanceAfter: balanceAvailable,
-							transferType:
-								paymentConstant.WALLET_ACTION_TYPE.PAYMENT,
-							status: paymentConstant.WALLET_HISTORY_STATUS
-								.SUCCEEDED,
-						},
-					]
-				);
-
-				console.log("paymentHistory", paymentHistory);
 
 				isSuccess = true;
 				message = "Bạn đã thanh toán đơn hàng qua ví thành công!";
