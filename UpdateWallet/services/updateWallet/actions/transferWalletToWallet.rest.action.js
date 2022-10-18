@@ -37,8 +37,8 @@ module.exports = async function (ctx) {
 		}
 
 		const existingSenderWallet = await this.broker.call(
-			"v1.WalletInfoModel.findOne",
-			[{ ownerId: userId }]
+			"v1.Wallet.findWallet",
+			{ userId }
 		);
 		if (_.get(existingSenderWallet, "id", null) === null) {
 			return {
@@ -50,8 +50,8 @@ module.exports = async function (ctx) {
 		}
 
 		const existingReceiverWallet = await this.broker.call(
-			"v1.WalletInfoModel.findOne",
-			[{ ownerId: receiverId }]
+			"v1.Wallet.findWallet",
+			{ userId: receiverId }
 		);
 		if (_.get(existingReceiverWallet, "id", null) === null) {
 			return {
