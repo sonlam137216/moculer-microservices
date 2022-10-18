@@ -25,10 +25,9 @@ module.exports = async function (ctx) {
 		}
 
 		// check existing wallet
-		const existingWallet = await this.broker.call(
-			"v1.WalletInfoModel.findOne",
-			[{ ownerId: userId }]
-		);
+		const existingWallet = await this.broker.call("v1.Wallet.findWallet", {
+			userId,
+		});
 
 		if (!existingWallet) {
 			return {
