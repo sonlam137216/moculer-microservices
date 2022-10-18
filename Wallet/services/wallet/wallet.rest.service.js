@@ -92,18 +92,13 @@ module.exports = {
 			},
 			timeout: 60000,
 
-			// rest: {
-			// 	method: "POST",
-			// 	fullPath: "/v1/External/Wallet/UpdateWallet",
-			// 	auth: {
-			// 		strategies: ["Default"],
-			// 		mode: "required",
-			// 	},
-			// },
-
 			params: {},
 
 			handler: require("./actions/updateWallet.rest.action"),
+		},
+
+		findWallet: {
+			handler: require("./actions/findWallet.action"),
 		},
 
 		/**

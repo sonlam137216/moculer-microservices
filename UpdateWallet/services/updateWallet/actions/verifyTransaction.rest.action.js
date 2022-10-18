@@ -32,8 +32,6 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOne",
 			[
 				{
-					walletIdOfSender: existingUser.id,
-					walletIdOfReceiver: existingUser.id,
 					"transactionInfo.status":
 						updateWalletConstant.TRANSACTION_STATUS.PENDING,
 					"transactionInfo.transactionId": transactionId,
@@ -50,8 +48,8 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const verifyTransactionFromBank = await axios.post(
-			"http://localhost:3000/v1/External/Bank/VerifyRequestPayment",
+		const verifyTransactionFromBank = await this.broker.call(
+			"v1.Bank.verifyRequestPayment",
 			{
 				otp,
 				transactionId:
@@ -60,10 +58,7 @@ module.exports = async function (ctx) {
 			}
 		);
 
-		console.log(
-			"verifyTransactionFromBank",
-			verifyTransactionFromBank.data
-		);
+		console.log("verifyTransactionFromBank", verifyTransactionFromBank);
 
 		if (!verifyTransactionFromBank) {
 			return {
@@ -74,7 +69,7 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const { success } = verifyTransactionFromBank.data;
+		const { success } = verifyTransactionFromBank;
 
 		// verifyTransactionFromBank.data.data.transactionInfo;
 		console.log("SUCCESS", success);
@@ -84,8 +79,6 @@ module.exports = async function (ctx) {
 				"v1.UpdateWalletInfoModel.findOneAndUpdate",
 				[
 					{
-						walletIdOfSender: existingUser.id,
-						walletIdOfReceiver: existingUser.id,
 						"transactionInfo.status":
 							updateWalletConstant.TRANSACTION_STATUS.PENDING,
 						"transactionInfo.transactionId": transactionId,

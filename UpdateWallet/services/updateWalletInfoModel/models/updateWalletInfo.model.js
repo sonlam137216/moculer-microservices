@@ -7,14 +7,6 @@ autoIncrement.initialize(mongoose);
 
 const Schema = mongoose.Schema(
 	{
-		walletIdOfSender: {
-			type: Number,
-			required: true,
-		},
-		walletIdOfReceiver: {
-			type: Number,
-			required: true,
-		},
 		transactionInfo: {
 			transactionId: {
 				type: String,

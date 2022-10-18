@@ -6,7 +6,7 @@ const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
-		const { phone, transactionAmount } = ctx.params.body;
+		const { phone, transactionAmount } = ctx.params;
 
 		const otp = generateOTP();
 		const transactionId = generateTransactionId();

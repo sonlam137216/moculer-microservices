@@ -15,8 +15,6 @@ module.exports = async function (ctx) {
 					transactionAmount,
 					transactionId,
 				},
-				walletIdOfSender,
-				walletIdOfReceiver,
 			},
 			receiverId,
 			senderId,
@@ -71,7 +69,7 @@ module.exports = async function (ctx) {
 		// check existing wallet
 		const walletSenderInfo = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
-			[{ id: walletIdOfSender }]
+			[{ ownerId: existingSenderUser.id }]
 		);
 
 		if (!walletSenderInfo) {
@@ -85,7 +83,7 @@ module.exports = async function (ctx) {
 
 		const walletReceiverInfo = await this.broker.call(
 			"v1.WalletInfoModel.findOne",
-			[{ id: walletIdOfReceiver }]
+			[{ ownerId: existingReceiverUser.id }]
 		);
 
 		if (!walletReceiverInfo) {
@@ -116,7 +114,7 @@ module.exports = async function (ctx) {
 					[
 						{
 							userId: receiverId,
-							walletId: walletIdOfReceiver,
+							walletId: existingReceiverUser.id,
 							balanceBefore: walletReceiverInfo.balanceAvailable,
 							balanceAfter: balanceAvailableOfReceiver,
 							transferType: walletConstant.WALLET_ACTION_TYPE.ADD,
@@ -137,13 +135,6 @@ module.exports = async function (ctx) {
 				}
 
 				message = "Cộng tiền ví thành công!";
-
-				// await new Promise((resolve) => {
-				// 	setTimeout(() => {
-				// 		console.log("ADD");
-				// 		resolve();
-				// 	}, 10000);
-				// });
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.TRANSFER: {
@@ -159,7 +150,7 @@ module.exports = async function (ctx) {
 					[
 						{
 							userId: senderId,
-							walletId: walletIdOfSender,
+							walletId: existingSenderUser.id,
 							balanceBefore: walletSenderInfo.balanceAvailable,
 							balanceAfter: balanceAvailableOfSender,
 							transferType:
@@ -176,7 +167,7 @@ module.exports = async function (ctx) {
 					[
 						{
 							userId: receiverId,
-							walletId: walletIdOfReceiver,
+							walletId: existingReceiverUser.id,
 							balanceBefore: walletReceiverInfo.balanceAvailable,
 							balanceAfter: balanceAvailableOfReceiver,
 							transferType:
@@ -194,11 +185,10 @@ module.exports = async function (ctx) {
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.SUB: {
-				walletHistoryOfReceiver =
-					walletHistoryOfReceiver.balanceAvailable -
-					transactionAmount;
+				balanceAvailableOfReceiver =
+					walletReceiverInfo.balanceAvailable - transactionAmount;
 
-				if (balanceAvailable < 0) {
+				if (balanceAvailableOfReceiver < 0) {
 					isValidBalance = false;
 					message = "Số dư ví hiện tại của ví không dủ";
 				} else {
@@ -211,7 +201,7 @@ module.exports = async function (ctx) {
 					[
 						{
 							userId: receiverId,
-							walletId: walletIdOfReceiver,
+							walletId: existingReceiverUser.id,
 							balanceBefore: walletReceiverInfo.balanceAvailable,
 							balanceAfter: balanceAvailableOfReceiver,
 							transferType: walletConstant.WALLET_ACTION_TYPE.SUB,
@@ -305,7 +295,7 @@ module.exports = async function (ctx) {
 						[
 							{
 								userId: senderId,
-								walletId: walletIdOfSender,
+								walletId: existingSenderUser.id,
 								status: walletConstant.WALLET_HISTORY_STATUS
 									.PENDING,
 								transactionId,
@@ -327,7 +317,7 @@ module.exports = async function (ctx) {
 						[
 							{
 								userId: receiverId,
-								walletId: walletIdOfReceiver,
+								walletId: existingReceiverUser.id,
 								status: walletConstant.WALLET_HISTORY_STATUS
 									.PENDING,
 								transactionId,
@@ -341,22 +331,20 @@ module.exports = async function (ctx) {
 							},
 						]
 					);
+
+					console.log(
+						"walletHistoryOfReceiver",
+						walletHistoryOfReceiver
+					);
 				}
 
-				console.log("====================================");
-				console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
-				console.log("====================================");
-
 				return {
-					code: 1001,
+					code: 1000,
 					data: {
-						message: "Không thể cập nhật thông tin ví!",
+						message: "cập nhật thành công!",
 					},
 				};
 			}
-
-			console.log("walletHistoryOfSender", walletHistoryOfSender);
-			console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
 
 			// udate thành công
 			return {
@@ -374,7 +362,7 @@ module.exports = async function (ctx) {
 				[
 					{
 						userId: senderId,
-						walletId: walletIdOfSender,
+						walletId: existingSenderUser.id,
 						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
 					},
 					{
@@ -390,7 +378,7 @@ module.exports = async function (ctx) {
 				[
 					{
 						userId: receiverId,
-						walletId: walletIdOfReceiver,
+						walletId: existingReceiverUser.id,
 						status: walletConstant.WALLET_HISTORY_STATUS.PENDING,
 					},
 					{

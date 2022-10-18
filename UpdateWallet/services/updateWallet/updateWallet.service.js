@@ -23,10 +23,10 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-		addWallet: {
+		deposit: {
 			rest: {
 				method: "POST",
-				fullPath: "/v1/External/UpdateWallet/AddWallet",
+				fullPath: "/v1/External/UpdateWallet/Deposit",
 				auth: {
 					strategies: ["Default"],
 					mode: "required",
@@ -40,13 +40,13 @@ module.exports = {
 				},
 			},
 
-			handler: require("./actions/addWallet.rest.action"),
+			handler: require("./actions/deposit.rest.action"),
 		},
 
-		subWallet: {
+		withDraw: {
 			rest: {
 				method: "POST",
-				fullPath: "/v1/External/UpdateWallet/SubWallet",
+				fullPath: "/v1/External/UpdateWallet/WithDraw",
 				auth: {
 					strategies: ["Default"],
 					mode: "required",
@@ -60,7 +60,7 @@ module.exports = {
 				},
 			},
 
-			handler: require("./actions/subWallet.rest.action"),
+			handler: require("./actions/withDraw.rest.action"),
 		},
 
 		verifyTransaction: {
@@ -125,6 +125,10 @@ module.exports = {
 			},
 
 			handler: require("./actions/verifyOtpWalletToWallet.rest.action"),
+		},
+
+		withDrawForPayment: {
+			handler: require("./actions/payForBill.rest.action"),
 		},
 
 		/**

@@ -52,8 +52,6 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOne",
 			[
 				{
-					walletIdOfSender: userId,
-					walletIdOfReceiver: receiverId,
 					"transactionInfo.transactionId": transactionId,
 				},
 			]
@@ -114,8 +112,6 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOneAndUpdate",
 			[
 				{
-					walletIdOfSender: userId,
-					walletIdOfReceiver: receiverId,
 					"transactionInfo.transactionId": transactionId,
 				},
 				{
@@ -137,8 +133,6 @@ module.exports = async function (ctx) {
 				"v1.UpdateWalletInfoModel.findOneAndUpdate",
 				[
 					{
-						walletIdOfSender: userId,
-						walletIdOfReceiver: receiverId,
 						"transactionInfo.transactionId": transactionId,
 					},
 					{

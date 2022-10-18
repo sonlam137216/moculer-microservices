@@ -13,15 +13,12 @@ const Schema = mongoose.Schema(
 		},
 		walletId: {
 			type: Number,
-			required: true,
 		},
 		balanceBefore: {
 			type: Number,
-			required: true,
 		},
 		balanceAfter: {
 			type: Number,
-			required: true,
 		},
 		transferType: {
 			type: String,
@@ -30,7 +27,6 @@ const Schema = mongoose.Schema(
 		},
 		transactionId: {
 			type: String,
-			required: true,
 		},
 		status: {
 			type: String,

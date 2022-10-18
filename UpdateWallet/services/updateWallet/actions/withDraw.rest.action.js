@@ -8,8 +8,6 @@ module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
 
-		// lock = await this.broker.cacher.lock(`accountId_${userId}`, 60 * 1000);
-
 		const { transactionAmount } = ctx.params.body;
 
 		const existingUser = await this.broker.call(
@@ -41,16 +39,24 @@ module.exports = async function (ctx) {
 			};
 		}
 
+		if (existingWallet.balanceAvailable - transactionAmount < 0) {
+			return {
+				code: 1001,
+				data: {
+					message:
+						"Số dư hiện tại không đủ, vui lòng nạp thêm tiền vào tài khoản!",
+				},
+			};
+		}
+
 		// create local transaction
 		const randomTransactionId = generateTransactionId();
 		const transactionCreateObj = {
-			walletIdOfSender: existingWallet.id,
-			walletIdOfReceiver: existingWallet.id,
 			transactionInfo: {
 				transactionId: randomTransactionId,
 				transactionAmount,
 				status: updateWalletConstant.TRANSACTION_STATUS.PENDING,
-				transferType: updateWalletConstant.WALLET_ACTION_TYPE.ADD,
+				transferType: updateWalletConstant.WALLET_ACTION_TYPE.SUB,
 			},
 		};
 		const transactionCreate = await this.broker.call(
@@ -76,14 +82,14 @@ module.exports = async function (ctx) {
 			"transactionAmount",
 		]);
 
-		const transactionResponseFromBank = await axios.post(
-			"http://localhost:3000/v1/External/Bank/CreateRequestPayment",
+		const transactionResponseFromBank = await this.broker.call(
+			"v1.Bank.createRequestPayment",
 			{ phone: userInfo.phone, transactionAmount }
 		);
 
 		console.log(
 			"transactionResponseFromBank",
-			transactionResponseFromBank.data.data
+			transactionResponseFromBank.data
 		);
 
 		if (!transactionResponseFromBank) {
@@ -100,8 +106,6 @@ module.exports = async function (ctx) {
 			"v1.UpdateWalletInfoModel.findOneAndUpdate",
 			[
 				{
-					walletIdOfSender: existingUser.id,
-					walletIdOfReceiver: existingUser.id,
 					"transactionInfo.status":
 						updateWalletConstant.TRANSACTION_STATUS.PENDING,
 					"transactionInfo.transactionId": randomTransactionId,
@@ -109,11 +113,11 @@ module.exports = async function (ctx) {
 				{
 					transactionInfoFromSupplier: {
 						transactionId:
-							transactionResponseFromBank.data.data
-								.transactionInfo.transactionId,
+							transactionResponseFromBank.data.transactionInfo
+								.transactionId,
 						transactionAmount:
-							transactionResponseFromBank.data.data
-								.transactionInfo.transactionAmount,
+							transactionResponseFromBank.data.transactionInfo
+								.transactionAmount,
 						status: transactionResponseFromBank.data.data
 							.transactionInfo.status,
 					},
@@ -139,7 +143,7 @@ module.exports = async function (ctx) {
 				userInfo,
 				walletInfo,
 				transactionInfo: updatedTransaction,
-				responseFromBank: transactionResponseFromBank.data.data,
+				responseFromBank: transactionResponseFromBank.data,
 			},
 		};
 	} catch (err) {

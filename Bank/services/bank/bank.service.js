@@ -7,6 +7,7 @@
 module.exports = {
 	name: "Bank",
 
+	version: 1,
 	/**
 	 * Settings
 	 */
@@ -28,13 +29,7 @@ module.exports = {
 				auth: false,
 			},
 
-			params: {
-				body: {
-					$$type: "object",
-					phone: "string",
-					transactionAmount: "number",
-				},
-			},
+			params: {},
 			handler: require("./actions/createRequestPayment.rest.action"),
 		},
 
