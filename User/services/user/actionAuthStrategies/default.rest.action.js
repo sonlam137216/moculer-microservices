@@ -6,6 +6,7 @@ const userSessionConstant = require("../constants/userSession.constant");
 module.exports = async function (ctx) {
 	try {
 		// return true;
+		console.log("LOG AUTH");
 		const tokenInfo = ctx.params;
 
 		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
