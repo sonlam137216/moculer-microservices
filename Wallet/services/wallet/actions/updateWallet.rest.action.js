@@ -400,7 +400,7 @@ module.exports = async function (ctx) {
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	} finally {
 		if (_.isFunction(lock)) {
-			await this.broker.cacher.clean(`accountId_${accountId}`);
+			// await this.broker.cacher.clean(`accountId_${accountId}`);
 			lock();
 		}
 	}

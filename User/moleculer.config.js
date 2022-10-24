@@ -194,7 +194,7 @@ module.exports = {
 			type: "Prometheus",
 			options: {
 				// HTTP port
-				port: 3030,
+				port: 3037,
 				// HTTP URL path
 				path: "/metrics",
 				// Default labels which are appended to all metrics labels
