@@ -13,7 +13,7 @@ module.exports = async function (ctx) {
 		// excelJS
 
 		const options = {
-			filename: "./files/file.xlsx",
+			filename: `./files/statistics_by_accountId_${fromDate}-${toDate}.xlsx`,
 			useStyles: true,
 			useSharedStrings: true,
 		};

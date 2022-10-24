@@ -1,7 +1,6 @@
 const _ = require("lodash");
+const userConstant = require("../constants/user.constant");
 const { MoleculerError } = require("moleculer").Errors;
-const moment = require("moment");
-const userSessionConstant = require("../constants/userSession.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -43,13 +42,14 @@ module.exports = async function (ctx) {
 		if (!moment(loginSession.expiredAt).isSame(tokenInfo.expiredAt)) {
 			throw new MoleculerError("Thời gian expired không đúng!", 401);
 		}
+
+		// check role
+		if (!userInfo.role || userInfo.role !== userConstant.ROLE.ADMIN) {
+			throw new MoleculerError("Bạn không có quyền truy cập!");
+		}
 	} catch (err) {
 		console.log("ERR", err);
-		if (err.name === "MoleculerError") {
-			console.log("in if", err.code);
-			throw new MoleculerError(err.message, err.code);
-			// throw err;
-		}
+		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}
 };
