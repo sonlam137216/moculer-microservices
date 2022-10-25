@@ -1,6 +1,8 @@
 const _ = require("lodash");
 const userConstant = require("../constants/user.constant");
 const { MoleculerError } = require("moleculer").Errors;
+const moment = require("moment");
+const userSessionConstant = require("../constants/userSession.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -45,7 +47,7 @@ module.exports = async function (ctx) {
 
 		// check role
 		if (!userInfo.role || userInfo.role !== userConstant.ROLE.ADMIN) {
-			throw new MoleculerError("Bạn không có quyền truy cập!");
+			throw new MoleculerError("Bạn không có quyền truy cập!", 403);
 		}
 	} catch (err) {
 		console.log("ERR", err);

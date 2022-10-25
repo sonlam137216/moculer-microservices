@@ -18,7 +18,7 @@ module.exports = async function (ctx) {
 		// column for data in excel. key must match data key
 		worksheet.columns = [
 			{ header: "S no.", key: "s_no", width: 10 },
-			{ header: "DAY", key: "_id", width: 10 },
+			{ header: "DAY", key: "date", width: 10 },
 			{
 				header: "Total In Day",
 				key: "totalInDay",
@@ -61,6 +61,9 @@ module.exports = async function (ctx) {
 									},
 								],
 							},
+							paymentMethod: method
+								? { $eq: method }
+								: { $exists: true },
 						},
 					},
 					{
@@ -72,28 +75,44 @@ module.exports = async function (ctx) {
 										date: "$createdAt",
 									},
 								},
-								status: "$status",
 							},
 							totalCount: { $sum: 1 },
-						},
-					},
-					{
-						$group: {
-							_id: "$_id.createdAt",
-							payments: {
-								$push: {
-									status: "$_id.status",
-									count: "$totalCount",
+							totalCountOfSuccess: {
+								$sum: {
+									$cond: {
+										if: { $eq: ["$status", "PAID"] },
+										then: 1,
+										else: 0,
+									},
 								},
 							},
-							totalCountInOneDay: { $sum: "$totalCount" },
+						},
+					},
+					// {
+					// 	$group: {
+					// 		_id: "$_id.createdAt",
+					// 		payments: {
+					// 			$push: {
+					// 				status: "$_id.status",
+					// 				count: "$totalCount",
+					// 			},
+					// 		},
+					// 		totalCountInOneDay: { $sum: "$totalCount" },
+					// 	},
+					// },
+					{
+						$project: {
+							date: "$_id.createdAt",
+							_id: 0,
+							totalCount: 1,
+							totalCountOfSuccess: 1,
 						},
 					},
 					{
 						$sort: {
-							createdAt: -1,
-							totalCountInOneDay: 1,
-							count: 1,
+							date: -1,
+							totalCountInOneDay: -1,
+							count: -1,
 						},
 					},
 				],
@@ -113,9 +132,9 @@ module.exports = async function (ctx) {
 		payments.forEach((payment, index) => {
 			const paymentGroup = {
 				s_no: index + 1,
-				_id: payment._id,
-				totalInDay: payment.totalCountInOneDay,
-				totalSuccessInDay: payment.payments[3].count,
+				date: payment.date,
+				totalInDay: payment.totalCount,
+				totalSuccessInDay: payment.totalCountOfSuccess,
 			};
 			console.log("paymentGroup", paymentGroup);
 			worksheet.addRow(paymentGroup); // add data to work sheet

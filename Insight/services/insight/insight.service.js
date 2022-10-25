@@ -22,25 +22,13 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-		// start auth actions
-		// adminAuth: {
-		// 	registry: {
-		// 		auth: {
-		// 			name: "AdminAuth",
-		// 			jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
-		// 		},
-		// 	},
-		// 	handler: require(""),
-		// },
-		// end auth actions
-
 		transactionStatisticsByDay: {
 			rest: {
 				method: "POST",
 				fullPath: "/v1/Insight/TransactionStatisticsByDay",
 				auth: {
-					strategies: ["AdminAuth"],
-					mode: "try",
+					strategies: ["AuthAdmin"],
+					mode: "required",
 				},
 			},
 
@@ -49,7 +37,7 @@ module.exports = {
 					$$type: "object",
 					fromDate: "string",
 					toDate: "string",
-					// method: "string",
+					method: "string|optional",
 				},
 			},
 			timeout: 60000,
@@ -61,8 +49,8 @@ module.exports = {
 				method: "POST",
 				fullPath: "/v1/Insight/DownloadStatisticsByDayToExcel",
 				auth: {
-					strategies: ["AdminAuth"],
-					mode: "try",
+					strategies: ["AuthAdmin"],
+					mode: "required",
 				},
 			},
 
@@ -71,7 +59,7 @@ module.exports = {
 					$$type: "object",
 					fromDate: "string",
 					toDate: "string",
-					// method: "string",
+					method: "string|optional",
 				},
 			},
 			timeout: 60000,
@@ -83,8 +71,8 @@ module.exports = {
 				method: "POST",
 				fullPath: "/v1/Insight/TransactionStatisticsByAccount",
 				auth: {
-					strategies: ["AdminAuth"],
-					mode: "try",
+					strategies: ["AuthAdmin"],
+					mode: "required",
 				},
 			},
 
@@ -93,11 +81,11 @@ module.exports = {
 					$$type: "object",
 					fromDate: "string",
 					toDate: "string",
-					// method: "string",
+					method: "string|optional",
 				},
 			},
 			timeout: 90000,
-			handler: require("./actions/transactionStatisticsByUser.rest.action"),
+			handler: require("./actions/transactionStatisticsByAccount.rest.action"),
 		},
 
 		downloadStatisticsByAccountIdToExcel: {
@@ -105,8 +93,8 @@ module.exports = {
 				method: "POST",
 				fullPath: "/v1/Insight/DownloadStatisticsByAccountIdToExcel",
 				auth: {
-					strategies: ["AdminAuth"],
-					mode: "try",
+					strategies: ["AuthAdmin"],
+					mode: "required",
 				},
 			},
 
@@ -115,7 +103,7 @@ module.exports = {
 					$$type: "object",
 					fromDate: "string",
 					toDate: "string",
-					// method: "string",
+					method: "string|optional",
 				},
 			},
 			timeout: 90000,

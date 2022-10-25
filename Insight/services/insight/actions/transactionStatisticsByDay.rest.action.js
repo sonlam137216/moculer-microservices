@@ -39,6 +39,9 @@ module.exports = async function (ctx) {
 									},
 								],
 							},
+							paymentMethod: method
+								? { $eq: method }
+								: { $exists: true },
 						},
 					},
 					{
@@ -50,28 +53,43 @@ module.exports = async function (ctx) {
 										date: "$createdAt",
 									},
 								},
-								status: "$status",
 							},
 							totalCount: { $sum: 1 },
-						},
-					},
-					{
-						$group: {
-							_id: "$_id.createdAt",
-							payments: {
-								$push: {
-									status: "$_id.status",
-									count: "$totalCount",
+							totalCountOfSuccess: {
+								$sum: {
+									$cond: {
+										if: { $eq: ["$status", "PAID"] },
+										then: 1,
+										else: 0,
+									},
 								},
 							},
-							totalCountInOneDay: { $sum: "$totalCount" },
+						},
+					},
+					// {
+					// 	$group: {
+					// 		_id: "$_id.createdAt",
+					// 		payments: {
+					// 			$push: {
+					// 				status: "$_id.status",
+					// 				count: "$totalCount",
+					// 			},
+					// 		},
+					// 		totalCountInOneDay: { $sum: "$totalCount" },
+					// 	},
+					// },
+					{
+						$project: {
+							date: "$_id.createdAt",
+							_id: 0,
+							totalCount: 1,
+							totalCountOfSuccess: 1,
 						},
 					},
 					{
 						$sort: {
 							createdAt: -1,
 							totalCountInOneDay: 1,
-							count: 1,
 						},
 					},
 				],

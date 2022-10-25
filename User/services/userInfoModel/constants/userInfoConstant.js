@@ -4,4 +4,8 @@ module.exports = {
 		FEMALE: "FEMALE",
 		OTHER: "OTHER",
 	},
+	ROLE: {
+		ADMIN: "ADMIN",
+		CUSTOMER: "CUSTOMER",
+	},
 };

@@ -5,7 +5,7 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		const { fromDate, toDate } = ctx.params.body;
+		const { fromDate, toDate, method } = ctx.params.body;
 
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();
 		const inputToDate = moment(toDate).endOf("day").toISOString();
@@ -78,6 +78,9 @@ module.exports = async function (ctx) {
 									},
 								],
 							},
+							paymentMethod: method
+								? { $eq: method }
+								: { $exists: true },
 						},
 					},
 					{
@@ -103,9 +106,6 @@ module.exports = async function (ctx) {
 							totalCountOfSuccess: 1,
 						},
 					},
-					// {
-					// 	$limit: 100,
-					// },
 					{
 						$sort: {
 							totalCount: -1,
