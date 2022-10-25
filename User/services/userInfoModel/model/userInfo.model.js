@@ -29,6 +29,12 @@ const Schema = mongoose.Schema(
 			type: String,
 			enum: _.values(userInfoConstant.GENDER),
 		},
+		role: {
+			type: String,
+			required: true,
+			enum: _.values(userInfoConstant.ROLE),
+			default: userInfoConstant.ROLE.CUSTOMER,
+		},
 		deviceIds: [
 			{
 				type: String,

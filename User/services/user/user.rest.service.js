@@ -42,6 +42,16 @@ module.exports = {
 			handler: require("./actionAuthStrategies/default.rest.action"),
 		},
 
+		authAdmin: {
+			registry: {
+				auth: {
+					name: "AuthAdmin",
+					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
+				},
+			},
+			handler: require("./actionAuthStrategies/authAdmin.rest.action"),
+		},
+
 		// End define auth strategies
 		register: {
 			rest: {
@@ -81,6 +91,49 @@ module.exports = {
 				},
 			},
 			handler: require("./actions/login.rest.action"),
+		},
+
+		registerAdmin: {
+			rest: {
+				method: "POST",
+				fullPath: "/v1/External/User/RegisterAdmin",
+				auth: {
+					strategies: ["AuthAdmin"],
+					mode: "required",
+				},
+			},
+
+			params: {
+				body: {
+					$$type: "object",
+					fullName: "string",
+					email: "string",
+					phone: "string",
+					password: "string",
+					gender: "string",
+					deviceId: "string",
+				},
+			},
+
+			handler: require("./actions/registerAdmin.rest.action"),
+		},
+
+		loginAdmin: {
+			rest: {
+				method: "POST",
+				fullPath: "/v1/External/User/LoginAdmin",
+				auth: false,
+			},
+
+			params: {
+				body: {
+					$$type: "object",
+					email: "string",
+					password: "string",
+					deviceId: "string",
+				},
+			},
+			handler: require("./actions/loginAdmin.rest.action"),
 		},
 
 		forgotPassword: {
