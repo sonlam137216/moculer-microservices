@@ -84,7 +84,7 @@ module.exports = {
 					method: "string|optional",
 				},
 			},
-			timeout: 120000,
+			timeout: 60000,
 			handler: require("./actions/transactionStatisticsByAccount.rest.action"),
 		},
 
