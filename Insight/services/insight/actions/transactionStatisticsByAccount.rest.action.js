@@ -4,10 +4,40 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
+		console.log("CTX", ctx.params);
 		const { fromDate, toDate, method } = ctx.params.body;
 
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();
 		const inputToDate = moment(toDate).endOf("day").toISOString();
+
+		const dateCompareQuery = {
+			$expr: {
+				$and: [
+					{
+						$gte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputFromDate,
+								},
+							},
+						],
+					},
+					{
+						$lte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputToDate,
+								},
+							},
+						],
+					},
+				],
+			},
+		};
+
+		const methodQuery = method ? { paymentMethod: method } : {};
 
 		const paymentGroupByAccount = await this.broker.call(
 			"v1.PaymentInfoModel.aggregate",
@@ -15,71 +45,19 @@ module.exports = async function (ctx) {
 				[
 					{
 						$match: {
-							$expr: {
-								$and: [
-									{
-										$gte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputFromDate,
-												},
-											},
-										],
-									},
-									{
-										$lte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputToDate,
-												},
-											},
-										],
-									},
-								],
-							},
-							// paymentMethod: method
-							// 	? { $eq: method }
-							// 	: { $exists: true },
+							...dateCompareQuery,
+							...methodQuery,
 						},
 					},
 					{
 						$group: {
-							// _id: "$userId",
 							_id: {
 								userId: "$userId",
 								status: "$status",
 							},
 							totalCount: { $sum: 1 },
-							// totalCountOfSuccess: {
-							// 	$sum: {
-							// 		$cond: {
-							// 			if: { $eq: ["$status", "PAID"] },
-							// 			then: 1,
-							// 			else: 0,
-							// 		},
-							// 	},
-							// },
 						},
 					},
-					{
-						$limit: 100,
-					},
-					// {
-					// 	$project: {
-					// 		id: "$_id",
-					// 		_id: 0,
-					// 		totalCount: 1,
-					// 		totalCountOfSuccess: 1,
-					// 	},
-					// },
-					// {
-					// 	$sort: {
-					// 		totalCount: -1,
-					// 		totalCountOfSuccess: -1,
-					// 	},
-					// },
 				],
 			],
 			{ timeout: 90000 }
@@ -94,7 +72,6 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const accountIds = [];
 		const accountTransactions = [];
 		let totalTransaction = 0;
 		let totalTransactionSuccess = 0;
@@ -102,10 +79,10 @@ module.exports = async function (ctx) {
 		let userInfoItem;
 		for (let i = 0; i < length; i++) {
 			// filter status and userId
-
-			if (!accountIds.includes(paymentGroupByAccount[i]._id.userId)) {
-				accountIds.push(paymentGroupByAccount[i]._id.userId);
-
+			if (
+				accountTransactions[accountTransactions.length - 1]?.id !==
+				paymentGroupByAccount[i]._id.userId
+			) {
 				userInfoItem = {
 					id: paymentGroupByAccount[i]._id.userId,
 					totalTransaction: 0,
@@ -115,8 +92,9 @@ module.exports = async function (ctx) {
 				accountTransactions.push(userInfoItem);
 			}
 
-			// existing
 			let accountTransactionsLength = accountTransactions.length;
+
+			// existing
 			if (paymentGroupByAccount[i]._id.status === "PAID") {
 				accountTransactions[
 					accountTransactionsLength - 1
@@ -124,8 +102,11 @@ module.exports = async function (ctx) {
 					accountTransactions[accountTransactionsLength - 1]
 						.totalTransactionSuccess +
 					paymentGroupByAccount[i].totalCount;
+
+				totalTransactionSuccess += paymentGroupByAccount[i].totalCount;
 			}
 
+			totalTransaction += paymentGroupByAccount[i].totalCount;
 			accountTransactions[
 				accountTransactionsLength - 1
 			].totalTransaction =
@@ -133,41 +114,48 @@ module.exports = async function (ctx) {
 					.totalTransaction + paymentGroupByAccount[i].totalCount;
 		}
 
-		// const userAccounts = await this.broker.call(
-		// 	"v1.UserInfoModel.findMany",
-		// 	[
-		// 		{
-		// 			id: { $in: accountIds },
-		// 		},
-		// 		"fullName id email -_id",
-		// 		{
-		// 			sort: { fullName: 1, id: 1, email: 1 },
-		// 		},
-		// 	],
-		// 	{ timeout: 90000 }
-		// );
+		const accountIds = accountTransactions.map((item) => item.id);
 
-		// if (!userAccounts) {
-		// 	return {
-		// 		code: 1001,
-		// 		data: {
-		// 			message: "Group By Account không thành công!",
-		// 		},
-		// 	};
-		// }
+		const userAccounts = await this.broker.call(
+			"v1.UserInfoModel.findMany",
+			[
+				{
+					id: { $in: accountIds },
+				},
+				"fullName id email -_id",
+			],
+			{ timeout: 90000 }
+		);
 
-		// const accountsAndPayment = _.merge(userAccounts, paymentGroupByAccount);
+		if (!userAccounts) {
+			return {
+				code: 1001,
+				data: {
+					message: "Group By Account không thành công!",
+				},
+			};
+		}
+
+		const accountsAndPayment = _.merge(userAccounts, accountTransactions);
+		const accountsAndPaymentSorted = _.orderBy(
+			accountsAndPayment,
+			[
+				"fullName",
+				"id",
+				"email",
+				"totalTransaction",
+				"totalTransactionSuccess",
+			],
+			["asc", "asc", "esc", "desc", "desc"]
+		);
 
 		return {
 			code: 1000,
 			data: {
 				message: "Thành công",
-				// totalTransaction,
-				// totalTransactionSuccess,
-				// accountsAndPayment,
-				paymentGroupByAccount,
-				// accountIds,
-				accountTransactions,
+				totalTransaction,
+				totalTransactionSuccess,
+				accountsAndPayments: accountsAndPaymentSorted,
 			},
 		};
 	} catch (err) {

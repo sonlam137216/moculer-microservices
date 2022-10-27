@@ -7,9 +7,6 @@ module.exports = async function (ctx) {
 	try {
 		const { fromDate, toDate, method } = ctx.params.body;
 
-		const inputFromDate = moment(fromDate).startOf("day").toISOString();
-		const inputToDate = moment(toDate).endOf("day").toISOString();
-
 		// excelJS
 		const path = "./files"; // Path to download excel
 		const workbook = new excelJs.Workbook(); // create new workbook
@@ -31,93 +28,11 @@ module.exports = async function (ctx) {
 			},
 		];
 
-		const payments = await this.broker.call(
-			"v1.PaymentInfoModel.aggregate",
-			[
-				[
-					{
-						$match: {
-							$expr: {
-								$and: [
-									{
-										$gte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputFromDate,
-												},
-											},
-										],
-									},
-									{
-										$lte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputToDate,
-												},
-											},
-										],
-									},
-								],
-							},
-							paymentMethod: method
-								? { $eq: method }
-								: { $exists: true },
-						},
-					},
-					{
-						$group: {
-							_id: {
-								createdAt: {
-									$dateToString: {
-										format: "%Y-%m-%d",
-										date: "$createdAt",
-									},
-								},
-							},
-							totalCount: { $sum: 1 },
-							totalCountOfSuccess: {
-								$sum: {
-									$cond: {
-										if: { $eq: ["$status", "PAID"] },
-										then: 1,
-										else: 0,
-									},
-								},
-							},
-						},
-					},
-					// {
-					// 	$group: {
-					// 		_id: "$_id.createdAt",
-					// 		payments: {
-					// 			$push: {
-					// 				status: "$_id.status",
-					// 				count: "$totalCount",
-					// 			},
-					// 		},
-					// 		totalCountInOneDay: { $sum: "$totalCount" },
-					// 	},
-					// },
-					{
-						$project: {
-							date: "$_id.createdAt",
-							_id: 0,
-							totalCount: 1,
-							totalCountOfSuccess: 1,
-						},
-					},
-					{
-						$sort: {
-							date: -1,
-							totalCountInOneDay: -1,
-							count: -1,
-						},
-					},
-				],
-			]
-		);
+		const {
+			data: { payments },
+		} = await this.broker.call("v1.Insight.transactionStatisticsByDay", {
+			body: { fromDate, toDate, method },
+		});
 
 		if (!payments) {
 			return {
@@ -136,7 +51,6 @@ module.exports = async function (ctx) {
 				totalInDay: payment.totalCount,
 				totalSuccessInDay: payment.totalCountOfSuccess,
 			};
-			console.log("paymentGroup", paymentGroup);
 			worksheet.addRow(paymentGroup); // add data to work sheet
 		});
 

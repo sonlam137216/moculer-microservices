@@ -9,39 +9,43 @@ module.exports = async function (ctx) {
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();
 		const inputToDate = moment(toDate).endOf("day").toISOString();
 
+		const dateCompareQuery = {
+			$expr: {
+				$and: [
+					{
+						$gte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputFromDate,
+								},
+							},
+						],
+					},
+					{
+						$lte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputToDate,
+								},
+							},
+						],
+					},
+				],
+			},
+		};
+
+		const methodQuery = method ? { paymentMethod: method } : {};
+
 		const paymentDetails = await this.broker.call(
 			"v1.PaymentInfoModel.aggregate",
 			[
 				[
 					{
 						$match: {
-							$expr: {
-								$and: [
-									{
-										$gte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputFromDate,
-												},
-											},
-										],
-									},
-									{
-										$lte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputToDate,
-												},
-											},
-										],
-									},
-								],
-							},
-							paymentMethod: method
-								? { $eq: method }
-								: { $exists: true },
+							...dateCompareQuery,
+							...methodQuery,
 						},
 					},
 					{
@@ -66,18 +70,6 @@ module.exports = async function (ctx) {
 							},
 						},
 					},
-					// {
-					// 	$group: {
-					// 		_id: "$_id.createdAt",
-					// 		payments: {
-					// 			$push: {
-					// 				status: "$_id.status",
-					// 				count: "$totalCount",
-					// 			},
-					// 		},
-					// 		totalCountInOneDay: { $sum: "$totalCount" },
-					// 	},
-					// },
 					{
 						$project: {
 							date: "$_id.createdAt",
@@ -109,7 +101,7 @@ module.exports = async function (ctx) {
 			code: 1000,
 			data: {
 				message: "thanh cong",
-				paymentDetails,
+				payments: paymentDetails,
 			},
 		};
 	} catch (err) {
