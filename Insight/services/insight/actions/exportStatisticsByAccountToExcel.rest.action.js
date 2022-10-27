@@ -7,11 +7,7 @@ module.exports = async function (ctx) {
 	try {
 		const { fromDate, toDate, method } = ctx.params.body;
 
-		const inputFromDate = moment(fromDate).startOf("day").toISOString();
-		const inputToDate = moment(toDate).endOf("day").toISOString();
-
 		// excelJS
-
 		const options = {
 			filename: `./files/statistics_by_accountId_${fromDate}-${toDate}.xlsx`,
 			useStyles: true,
@@ -48,114 +44,12 @@ module.exports = async function (ctx) {
 			},
 		];
 
-		const paymentGroupByAccount = await this.broker.call(
-			"v1.PaymentInfoModel.aggregate",
-			[
-				[
-					{
-						$match: {
-							$expr: {
-								$and: [
-									{
-										$gte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputFromDate,
-												},
-											},
-										],
-									},
-									{
-										$lte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputToDate,
-												},
-											},
-										],
-									},
-								],
-							},
-							paymentMethod: method
-								? { $eq: method }
-								: { $exists: true },
-						},
-					},
-					{
-						$group: {
-							_id: "$userId",
-							totalCount: { $sum: 1 },
-							totalCountOfSuccess: {
-								$sum: {
-									$cond: {
-										if: { $eq: ["$status", "PAID"] },
-										then: 1,
-										else: 0,
-									},
-								},
-							},
-						},
-					},
-					{
-						$project: {
-							id: "$_id",
-							_id: 0,
-							totalCount: 1,
-							totalCountOfSuccess: 1,
-						},
-					},
-					{
-						$sort: {
-							totalCount: -1,
-							totalCountOfSuccess: -1,
-						},
-					},
-				],
-			],
-			{ timeout: 90000 }
+		const {
+			data: { accountsAndPayments },
+		} = await this.broker.call(
+			"v1.Insight.transactionStatisticsByAccount",
+			{ body: { fromDate, toDate, method } }
 		);
-
-		if (!paymentGroupByAccount) {
-			return {
-				code: 1001,
-				data: {
-					message: "Group By Account không thành công!",
-				},
-			};
-		}
-
-		const accountIds = [];
-		const length = paymentGroupByAccount.length;
-		for (let i = 0; i < length; i++) {
-			accountIds.push(paymentGroupByAccount[i].id);
-		}
-
-		const userAccounts = await this.broker.call(
-			"v1.UserInfoModel.findMany",
-			[
-				{
-					id: { $in: accountIds },
-				},
-				"fullName id email -_id",
-				{
-					sort: { fullName: 1, id: 1, email: 1 },
-				},
-			],
-			{ timeout: 90000 }
-		);
-
-		if (!userAccounts) {
-			return {
-				code: 1001,
-				data: {
-					message: "User account error",
-				},
-			};
-		}
-
-		let accountsAndPayments = _.merge(userAccounts, paymentGroupByAccount);
 
 		// add data to excel
 		let accountsAndPaymentsLength = accountsAndPayments.length;
@@ -166,8 +60,9 @@ module.exports = async function (ctx) {
 				fullName: accountsAndPayments[i].fullName,
 				id: accountsAndPayments[i].id,
 				email: accountsAndPayments[i].email,
-				totalCount: accountsAndPayments[i].totalCount,
-				totalCountOfSuccess: accountsAndPayments[i].totalCountOfSuccess,
+				totalCount: accountsAndPayments[i].totalTransaction,
+				totalCountOfSuccess:
+					accountsAndPayments[i].totalTransactionSuccess,
 			};
 
 			worksheet.addRow(paymentGroup).commit(); // add data to work sheet

@@ -4,10 +4,40 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
+		console.log("CTX", ctx.params);
 		const { fromDate, toDate, method } = ctx.params.body;
 
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();
 		const inputToDate = moment(toDate).endOf("day").toISOString();
+
+		const dateCompareQuery = {
+			$expr: {
+				$and: [
+					{
+						$gte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputFromDate,
+								},
+							},
+						],
+					},
+					{
+						$lte: [
+							"$createdAt",
+							{
+								$dateFromString: {
+									dateString: inputToDate,
+								},
+							},
+						],
+					},
+				],
+			},
+		};
+
+		const methodQuery = method ? { paymentMethod: method } : {};
 
 		const paymentGroupByAccount = await this.broker.call(
 			"v1.PaymentInfoModel.aggregate",
@@ -15,62 +45,17 @@ module.exports = async function (ctx) {
 				[
 					{
 						$match: {
-							$expr: {
-								$and: [
-									{
-										$gte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputFromDate,
-												},
-											},
-										],
-									},
-									{
-										$lte: [
-											"$createdAt",
-											{
-												$dateFromString: {
-													dateString: inputToDate,
-												},
-											},
-										],
-									},
-								],
-							},
-							paymentMethod: method
-								? { $eq: method }
-								: { $exists: true },
+							...dateCompareQuery,
+							...methodQuery,
 						},
 					},
 					{
 						$group: {
-							_id: "$userId",
-							totalCount: { $sum: 1 },
-							totalCountOfSuccess: {
-								$sum: {
-									$cond: {
-										if: { $eq: ["$status", "PAID"] },
-										then: 1,
-										else: 0,
-									},
-								},
+							_id: {
+								userId: "$userId",
+								status: "$status",
 							},
-						},
-					},
-					{
-						$project: {
-							id: "$_id",
-							_id: 0,
-							totalCount: 1,
-							totalCountOfSuccess: 1,
-						},
-					},
-					{
-						$sort: {
-							totalCount: -1,
-							totalCountOfSuccess: -1,
+							totalCount: { $sum: 1 },
 						},
 					},
 				],
@@ -87,16 +72,49 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const accountIds = [];
+		const accountTransactions = [];
 		let totalTransaction = 0;
 		let totalTransactionSuccess = 0;
 		const length = paymentGroupByAccount.length;
+		let userInfoItem;
 		for (let i = 0; i < length; i++) {
-			accountIds.push(paymentGroupByAccount[i].id);
+			// filter status and userId
+			if (
+				accountTransactions[accountTransactions.length - 1]?.id !==
+				paymentGroupByAccount[i]._id.userId
+			) {
+				userInfoItem = {
+					id: paymentGroupByAccount[i]._id.userId,
+					totalTransaction: 0,
+					totalTransactionSuccess: 0,
+				};
+
+				accountTransactions.push(userInfoItem);
+			}
+
+			let accountTransactionsLength = accountTransactions.length;
+
+			// existing
+			if (paymentGroupByAccount[i]._id.status === "PAID") {
+				accountTransactions[
+					accountTransactionsLength - 1
+				].totalTransactionSuccess =
+					accountTransactions[accountTransactionsLength - 1]
+						.totalTransactionSuccess +
+					paymentGroupByAccount[i].totalCount;
+
+				totalTransactionSuccess += paymentGroupByAccount[i].totalCount;
+			}
+
 			totalTransaction += paymentGroupByAccount[i].totalCount;
-			totalTransactionSuccess +=
-				paymentGroupByAccount[i].totalCountOfSuccess;
+			accountTransactions[
+				accountTransactionsLength - 1
+			].totalTransaction =
+				accountTransactions[accountTransactionsLength - 1]
+					.totalTransaction + paymentGroupByAccount[i].totalCount;
 		}
+
+		const accountIds = accountTransactions.map((item) => item.id);
 
 		const userAccounts = await this.broker.call(
 			"v1.UserInfoModel.findMany",
@@ -105,9 +123,6 @@ module.exports = async function (ctx) {
 					id: { $in: accountIds },
 				},
 				"fullName id email -_id",
-				{
-					sort: { fullName: 1, id: 1, email: 1 },
-				},
 			],
 			{ timeout: 90000 }
 		);
@@ -121,7 +136,18 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const accountsAndPayment = _.merge(userAccounts, paymentGroupByAccount);
+		const accountsAndPayment = _.merge(userAccounts, accountTransactions);
+		const accountsAndPaymentSorted = _.orderBy(
+			accountsAndPayment,
+			[
+				"fullName",
+				"id",
+				"email",
+				"totalTransaction",
+				"totalTransactionSuccess",
+			],
+			["asc", "asc", "esc", "desc", "desc"]
+		);
 
 		return {
 			code: 1000,
@@ -129,7 +155,7 @@ module.exports = async function (ctx) {
 				message: "Thành công",
 				totalTransaction,
 				totalTransactionSuccess,
-				accountsAndPayment,
+				accountsAndPayments: accountsAndPaymentSorted,
 			},
 		};
 	} catch (err) {
