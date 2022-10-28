@@ -7,8 +7,9 @@ const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { email, language } = ctx.params.body;
-		if (language) this.setLocale(language);
+		console.log(ctx.params);
+		const { email, language } = ctx.params.input;
+		if (language === "en") this.setLocale(language);
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -17,7 +18,7 @@ module.exports = async function (ctx) {
 
 		if (!existingUser) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
@@ -47,17 +48,15 @@ module.exports = async function (ctx) {
 
 		if (!otpCreate) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_OTP_CREATE),
 			};
 		}
 
 		return {
-			code: 1000,
+			succeeded: true,
 			message: this.__(userI18nConstant.CHECK_EMAIL_TO_UPDATE_PASSWORD),
-			data: {
-				otp,
-			},
+			otp,
 		};
 	} catch (err) {
 		console.log("ERR", err);

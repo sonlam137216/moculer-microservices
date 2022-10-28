@@ -4,11 +4,12 @@ const jsonWebToken = require("jsonwebtoken");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx, route, req, authHandler) {
-	// if (req.url === '/api/list-aliases') return { credentials: null, isValid: false };
+	// if (req.url === "/api/list-aliases")
+	// 	return { credentials: null, isValid: false };
 	// console.log("=====================");
 	// console.log("CTX", ctx);
 	// console.log("=====================");
-	// console.log("ROUTE", route);
+	// // console.log("ROUTE", route);
 	// console.log("=====================");
 	// console.log("REQ", req);
 	// console.log("=====================");
@@ -85,6 +86,11 @@ module.exports = async function (ctx, route, req, authHandler) {
 				isValid = true;
 			}
 			break;
+		case "try":
+			if (!_.isEmpty(decoded) && _.has(req, "headers.authorization")) {
+				isValid = true;
+			}
+			break;
 		default:
 			break;
 	}
@@ -92,10 +98,15 @@ module.exports = async function (ctx, route, req, authHandler) {
 	try {
 		if (isValid === true) {
 			data = await ctx.broker.call(action, decoded);
+			console.log("data", data);
 		}
 	} catch (error) {
 		console.log(error);
 		throw new MoleculerError(error.message, 401, null, error.data);
 	}
-	return { credentials: decoded, isValid, data };
+	return {
+		credentials: { ...decoded, token: req.headers.authorization },
+		isValid,
+		data,
+	};
 };

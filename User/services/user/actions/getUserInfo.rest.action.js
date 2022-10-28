@@ -1,6 +1,6 @@
 const _ = require("lodash");
+const userI18nConstant = require("../constants/userI18n.constant");
 const { MoleculerError } = require("moleculer").Errors;
-const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
@@ -13,17 +13,23 @@ module.exports = async function (ctx) {
 		if (!userInfo) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại!",
-				},
+				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
+		const userInfoResponse = _.pick(userInfo, [
+			"id",
+			"fullName",
+			"email",
+			"phone",
+			"gender",
+		]);
+
 		return {
 			code: 1000,
+			message: this.__(userI18nConstant.GET_INFO_SUCCESS),
 			data: {
-				message: "Lấy thông tin thành công!",
-				userInfo,
+				userInfo: userInfoResponse,
 			},
 		};
 	} catch (err) {

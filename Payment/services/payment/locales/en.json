@@ -1,3 +1,15 @@
 {
-    "error": "error"
+    "emailNotExist": "Email does not exist!",
+    "userNotExist": "Account does not exist!",
+    "errorUserWallet": "Account does not have wallet!",
+    "errorNotEnoughBalance": "Balance in wallet is not enough!",
+    "errorOrderCreate": "Create order failed, please create again!",
+    "errorWalletUpdate": "Update wallet successfully",
+    "payForBillInWalletSuccess": "You have successfully paid for your order via wallet!",
+    "payForBillInNapas": "Payment information created successfully, please pay to complete the transaction!",
+    "errorMethodPayment":  "Payment method invalid!",
+    "errorPaymentNotFound": "Not found payment information!",
+    "paymentGetSuccess": "Get payment information successfully!",
+    "errorPaymentExpired": "Payment expired or update failed, please contact directly!",
+    "paymentUpdateSuccess": "Update successfully!"
 }
