@@ -1,3 +1,20 @@
 {
-    "error": "lỗi"
+    "emailNotExist": "Email không tồn tại!",
+    "userNotExist": "Tài khoản không tồn tại!",
+    "errorUserWallet": "Tài khoản chưa có ví!",
+    "errorNotEnoughBalance": "Số dư trong ví hiện tại không đủ",
+    "errorOrderCreate": "Tạo Order không thành công, vui lòng tạo lại!",
+    "errorWalletUpdate": "Cập nhật ví không thành công",
+    "payForBillInWalletSuccess": "Bạn đã thanh toán đơn hàng qua ví thành công!",
+    "payForBillInNapas": "Tạo thông tin thanh toán thành công, vui lòng thanh toán để hoàn thành giao dịch!",
+    "errorMethodPayment":  "Phương thức thanh toán không hợp lệ!",
+    "errorPaymentNotFound": "Không tìm thấy thông tin thanh toán!",
+    "paymentGetSuccess": "Lấy thông tin thanh toán thành công!",
+    "errorPaymentExpired": "Payment hết hạn hoặc cập nhật không thành công, vui lòng liên hệ trực tiếp!",
+    "paymentUpdateSuccess": "Cập nhật thành công",
+    "errorTokenMissing": "Missing Token!",
+    "errorTokenFormat": "Token invalid!",
+    "errorSessionNotFound": "Not found login session!",
+    "errorTokenExpired": "Token is expired!",
+    "errorTokenExpiredTime": "Expired time does not match!"
 }

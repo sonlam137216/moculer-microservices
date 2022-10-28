@@ -2,14 +2,16 @@ const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const createToken = require("../../../utils/createToken");
 const moment = require("moment");
-const userSessionConstant = require("../constants/userSession.constant");
 const md5 = require("md5");
+const userSessionConstant = require("../constants/userSession.constant");
+const userConstant = require("../constants/user.constant");
 const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { email, password, deviceId, language } = ctx.params.body;
-		if (language === "en") this.setLocale(language);
+		const { email, password, deviceId, language } = ctx.params.input;
+
+		if (language && language === "en") this.setLocale(language);
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -18,15 +20,26 @@ module.exports = async function (ctx) {
 
 		if (!existingUser) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
+
+		if (
+			!existingUser?.role ||
+			existingUser.role !== userConstant.ROLE.ADMIN
+		) {
+			return {
+				succeeded: false,
+				message: this.__(userI18nConstant.ERROR_USER_ROLE),
+			};
+		}
+
 		const hashedPassword = md5(password + this.settings.salt);
 
 		if (hashedPassword !== existingUser.password) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.WRONG_PASSWORD),
 			};
 		}
@@ -49,7 +62,7 @@ module.exports = async function (ctx) {
 
 			if (_.get(updatedUser, "id", null)) {
 				return {
-					code: 1001,
+					succeeded: false,
 					message: this.__(userI18nConstant.ERROR_UPDATE_DEVICE),
 				};
 			}
@@ -97,13 +110,12 @@ module.exports = async function (ctx) {
 		return {
 			code: 1000,
 			message: this.__(userI18nConstant.LOGIN_SUCCESS),
-			data: {
-				userInfo,
-				accessToken: accessToken,
-			},
+			userInfo,
+			accessToken: accessToken,
 		};
 	} catch (err) {
 		console.log("ERR", err);
+
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}

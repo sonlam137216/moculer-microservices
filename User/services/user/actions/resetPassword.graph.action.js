@@ -6,7 +6,7 @@ const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { email, password, otp, language } = ctx.params.body;
+		const { email, password, otp, language } = ctx.params.input;
 
 		if (language && language === "en") this.setLocale(language);
 
@@ -18,7 +18,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(existingUser, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
@@ -29,7 +29,7 @@ module.exports = async function (ctx) {
 
 		if (!existingOtp) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.OTP_NOT_EXIST),
 			};
 		}
@@ -39,7 +39,7 @@ module.exports = async function (ctx) {
 
 		if (hashOtp !== existingOtp.otp) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_OTP_NOT_MATCH),
 			};
 		}
@@ -53,7 +53,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(updatedUser, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_USER_UPDATE),
 			};
 		}
@@ -69,11 +69,8 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
+			succeeded: true,
 			message: this.__(userI18nConstant.PASSWORD_UPDATE_SUCCESS),
-			data: {
-				userInfo: updatedUser,
-			},
 		};
 	} catch (err) {
 		console.log("ERR", err);

@@ -5,26 +5,28 @@ const validateEmail = require("../../../utils/validateEmail");
 const validatePhoneNumber = require("../../../utils/validatePhoneNumber");
 const moment = require("moment");
 const md5 = require("md5");
-const userI18nConstant = require("../constants/userI18n.constant");
+const userConstant = require("../constants/user.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { fullName, email, phone, password, gender, deviceId, language } =
-			ctx.params.body;
-
-		if (language === "en") this.setLocale(language);
+		const { fullName, email, phone, password, gender, deviceId } =
+			ctx.params.input;
 
 		if (!validateEmail(email)) {
 			return {
 				code: 1001,
-				message: this.__(userI18nConstant.ERROR_EMAIL_FORMAT),
+				data: {
+					message: "Email không hợp lệ!",
+				},
 			};
 		}
 
 		if (!validatePhoneNumber(phone)) {
 			return {
 				code: 1001,
-				message: this.__(userI18nConstant.ERROR_PHONE_FORMAT),
+				data: {
+					message: "Số điện thoại không đúng định dạng!",
+				},
 			};
 		}
 
@@ -36,7 +38,9 @@ module.exports = async function (ctx) {
 		if (existingEmailOrPhone) {
 			return {
 				code: 1001,
-				message: this.__(userI18nConstant.EMAIL_OR_PHONE_EXISTED),
+				data: {
+					message: "Email hoặc số điện thoại đã tồn tại",
+				},
 			};
 		}
 
@@ -48,6 +52,7 @@ module.exports = async function (ctx) {
 			phone,
 			password: hashedPassword,
 			gender,
+			role: userConstant.ROLE.ADMIN,
 			deviceIds: [deviceId],
 		};
 		console.log("CREATE", createObj);
@@ -59,7 +64,9 @@ module.exports = async function (ctx) {
 		if (_.get(userCreate, "id", null) === null) {
 			return {
 				code: 1001,
-				message: this.__(userI18nConstant.ERROR_USER_CREATE),
+				data: {
+					message: "Tạo tài khoản không thành công",
+				},
 			};
 		}
 
@@ -77,11 +84,14 @@ module.exports = async function (ctx) {
 		if (_.get(sessionCreate, "id", null) === null) {
 			return {
 				code: 1001,
-				message: this.__(userI18nConstant.ERROR_LOGIN_SESSION),
+				data: {
+					message:
+						"Không thể tạo phiên đăng nhập, vui lòng đăng nhập lại",
+				},
 			};
 		}
 
-		const accessToken = createToken(payload);
+		// const accessToken = createToken(payload);
 
 		const userInfo = _.pick(userCreate, [
 			"id",
@@ -93,15 +103,14 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1000,
-			message: this.__(userI18nConstant.USER_CREATE_SUCCESS),
 			data: {
-				accessToken: accessToken,
+				message: "Tạo tài khoản thành công!",
+				// accessToken: accessToken,
 				userInfo,
 			},
 		};
 	} catch (err) {
 		console.log("ERR", err);
-
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}

@@ -5,7 +5,7 @@ const { MoleculerError } = require("moleculer").Errors;
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
-		const { fullName, gender, language } = ctx.params.body;
+		const { fullName, gender, language } = ctx.params.input;
 
 		if (language === "en") this.setLocale(language);
 
@@ -27,7 +27,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(updatedUser, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_USER_UPDATE),
 			};
 		}
@@ -41,11 +41,9 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
+			succeeded: true,
 			message: this.__(userI18nConstant.USER_UPDATE_SUCCESS),
-			data: {
-				userInfo,
-			},
+			userInfo,
 		};
 	} catch (err) {
 		console.log("ERR", err);

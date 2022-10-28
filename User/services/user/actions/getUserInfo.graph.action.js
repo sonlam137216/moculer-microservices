@@ -5,34 +5,21 @@ const { MoleculerError } = require("moleculer").Errors;
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
-		const { fullName, gender, language } = ctx.params.body;
-
+		const { language } = ctx.params.input;
 		if (language === "en") this.setLocale(language);
 
-		const updatedUser = await this.broker.call(
-			"v1.UserInfoModel.findOneAndUpdate",
-			[
-				{
-					id: userId,
-				},
-				{
-					fullName,
-					gender,
-				},
-				{
-					new: true,
-				},
-			]
-		);
+		const userInfo = await this.broker.call("v1.UserInfoModel.findOne", [
+			{ id: userId },
+		]);
 
-		if (_.get(updatedUser, "id", null) === null) {
+		if (!userInfo) {
 			return {
-				code: 1001,
-				message: this.__(userI18nConstant.ERROR_USER_UPDATE),
+				succeeded: false,
+				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
-		const userInfo = _.pick(updatedUser, [
+		const userInfoResponse = _.pick(userInfo, [
 			"id",
 			"fullName",
 			"email",
@@ -41,11 +28,9 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
-			message: this.__(userI18nConstant.USER_UPDATE_SUCCESS),
-			data: {
-				userInfo,
-			},
+			succeeded: true,
+			message: this.__(userI18nConstant.GET_INFO_SUCCESS),
+			userInfo: userInfoResponse,
 		};
 	} catch (err) {
 		console.log("ERR", err);

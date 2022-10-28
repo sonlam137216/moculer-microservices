@@ -1,9 +1,19 @@
 const _ = require("lodash");
+const moleculerI18n = require("moleculer-i18n-js");
+const path = require("path");
 
 module.exports = {
 	name: "User.rest",
 
 	version: 1,
+
+	mixins: [moleculerI18n],
+
+	i18n: {
+		directory: path.join(__dirname, "locales"),
+		locales: ["vi", "en"],
+		defaultLocale: "vi",
+	},
 
 	settings: {
 		salt: "secret_salt",
@@ -36,7 +46,7 @@ module.exports = {
 			registry: {
 				auth: {
 					name: "Default",
-					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
+					jwtKey: process.env.JWT_SECRETKEY,
 				},
 			},
 			handler: require("./actionAuthStrategies/default.rest.action"),
@@ -46,7 +56,7 @@ module.exports = {
 			registry: {
 				auth: {
 					name: "AuthAdmin",
-					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
+					jwtKey: process.env.JWT_SECRETKEY,
 				},
 			},
 			handler: require("./actionAuthStrategies/authAdmin.rest.action"),

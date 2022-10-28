@@ -58,18 +58,6 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-		// start auth actions
-		default: {
-			registry: {
-				auth: {
-					name: "Default",
-					jwtKey: "SECRET_KEY_CHANGE_IN_PRODUCTION",
-				},
-			},
-			handler: require("./actionAuthStrategies/default.rest.action"),
-		},
-		// end auth actions
-
 		createPayment: {
 			rest: {
 				method: "POST",

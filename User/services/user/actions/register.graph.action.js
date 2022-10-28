@@ -10,20 +10,20 @@ const userI18nConstant = require("../constants/userI18n.constant");
 module.exports = async function (ctx) {
 	try {
 		const { fullName, email, phone, password, gender, deviceId, language } =
-			ctx.params.body;
+			ctx.params.input;
 
 		if (language === "en") this.setLocale(language);
 
 		if (!validateEmail(email)) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_EMAIL_FORMAT),
 			};
 		}
 
 		if (!validatePhoneNumber(phone)) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_PHONE_FORMAT),
 			};
 		}
@@ -35,7 +35,7 @@ module.exports = async function (ctx) {
 
 		if (existingEmailOrPhone) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.EMAIL_OR_PHONE_EXISTED),
 			};
 		}
@@ -50,7 +50,6 @@ module.exports = async function (ctx) {
 			gender,
 			deviceIds: [deviceId],
 		};
-		console.log("CREATE", createObj);
 
 		const userCreate = await this.broker.call("v1.UserInfoModel.create", [
 			createObj,
@@ -58,7 +57,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(userCreate, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_USER_CREATE),
 			};
 		}
@@ -76,7 +75,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(sessionCreate, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_LOGIN_SESSION),
 			};
 		}
@@ -92,16 +91,13 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
+			succeeded: false,
 			message: this.__(userI18nConstant.USER_CREATE_SUCCESS),
-			data: {
-				accessToken: accessToken,
-				userInfo,
-			},
+			accessToken,
+			userInfo,
 		};
 	} catch (err) {
 		console.log("ERR", err);
-
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}

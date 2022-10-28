@@ -3,6 +3,7 @@ const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
 	try {
+		console.log("CTX", ctx);
 		const { userId, deviceId } = ctx.meta.auth.credentials;
 
 		// check user deviceID
