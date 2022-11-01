@@ -1,5 +1,6 @@
 const _ = require("lodash");
 const paymentConstant = require("../constants/payment.constant");
+const paymentI18nConstant = require("../constants/paymentI18n.constant");
 const MoleculerError = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -16,10 +17,8 @@ module.exports = async function (ctx) {
 
 		if (!existingUser) {
 			return {
-				code: 1001,
-				data: {
-					message: "User không tồn tại!",
-				},
+				succeeded: false,
+				message: this.__(paymentI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -30,10 +29,8 @@ module.exports = async function (ctx) {
 
 		if (!existingWallet) {
 			return {
-				code: 1001,
-				data: {
-					message: "User chưa có ví!",
-				},
+				succeeded: false,
+				message: this.__(paymentI18nConstant.ERROR_USER_WALLET),
 			};
 		}
 
@@ -51,7 +48,9 @@ module.exports = async function (ctx) {
 
 				// not enough balance
 				if (balanceAvailable < 0) {
-					message = "Số dư trong ví hiện tại không đủ!";
+					message = this.__(
+						paymentI18nConstant.ERROR_NOT_ENOUGH_BALANCE
+					);
 					break;
 				}
 
@@ -73,11 +72,10 @@ module.exports = async function (ctx) {
 
 				if (_.get(paymentCreate, "id", null) === null) {
 					return {
-						code: 1001,
-						data: {
-							message:
-								"Tạo Order không thành công, vui lòng tạo lại!",
-						},
+						succeeded: false,
+						message: this.__(
+							paymentI18nConstant.ERROR_ORDER_CREATE
+						),
 					};
 				}
 
@@ -98,10 +96,10 @@ module.exports = async function (ctx) {
 						]
 					);
 					return {
-						code: 1001,
-						data: {
-							message: "Cập nhật ví không thành công",
-						},
+						succeeded: false,
+						message: this.__(
+							paymentI18nConstant.ERROR_WALLET_UPDATE
+						),
 					};
 				}
 
@@ -111,7 +109,9 @@ module.exports = async function (ctx) {
 				]);
 
 				isSuccess = true;
-				message = "Bạn đã thanh toán đơn hàng qua ví thành công!";
+				message = this.__(
+					paymentI18nConstant.PAY_FOR_BILL_IN_WALLET_SUCCESS
+				);
 				walletInfo = updatedWallet;
 				paymentInfo = paymentCreate;
 
@@ -133,8 +133,7 @@ module.exports = async function (ctx) {
 				);
 
 				isSuccess = true;
-				message =
-					"Tạo thông tin thanh toán thành công, vui lòng thanh toán để hoàn thành giao dịch!";
+				message = this.__(paymentI18nConstant.PAY_FOR_BILL_IN_NAPAS);
 				walletInfo = existingWallet;
 				paymentInfo = paymentCreate;
 				// create url
@@ -143,28 +142,23 @@ module.exports = async function (ctx) {
 				break;
 			}
 			default: {
-				message = "Phương thức thanh toán không hợp lệ!";
+				message = this.__(paymentI18nConstant.ERROR_METHOD_PAYMENT);
 				break;
 			}
 		}
 
 		return isSuccess
 			? {
-					code: 1000,
+					succeeded: true,
+					message,
 					data: {
-						message,
-						data: {
-							paymentInfo,
-							walletInfo,
-							url,
-						},
+						paymentInfo,
+						url,
 					},
 			  }
 			: {
-					code: 1001,
-					data: {
-						message,
-					},
+					succeeded: false,
+					message,
 			  };
 	} catch (err) {
 		console.log(err);

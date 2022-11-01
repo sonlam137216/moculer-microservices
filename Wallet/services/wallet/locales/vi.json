@@ -1,0 +1,20 @@
+{
+    "emailNotExist": "Email không tồn tại!",
+    "userNotExist": "Người dùng không tồn tại!",
+    "receiverNotExist": "Người nhận không tồn tại!",
+    "otpNotExist": "Otp không tồn tại!",
+    "getInfoSuccess": "Lấy thông tin thành công!",
+    "errorWalletNotFound": "Không tồn tại ví!",
+    "errorServiceForbidden": "Service không có quyền truy cập!",
+    "errorUserWalletExisted": "Tài khoản đã có ví!",
+    "walletCreateSuccess": "Tạo ví thành công!",
+    "errorReceiverWallet": "Tài khoản người nhận chưa có ví!",
+    "errorNotEnoughBalance": "Số dư trong ví hiện tại không đủ",
+    "errorUpdateWallet": "Cập nhật tiền ví không thành công!",
+    "errorWalletHistoryCreate": "Tạo lịch sử không thành công!",
+    "errorWalletMethod": "Phương thức cập nhật không hợp lệ!",
+    "walletAddSuccess": "Cộng tiền ví thành công",
+    "walletSubSuccess": "Trừ tiền ví thành công",
+    "walletTransferSuccess": "Chuyển tiền thành công!",
+    "walletUpdateSuccess": "Cập nhật thành công!"
+}

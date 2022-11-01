@@ -3,7 +3,7 @@ const moleculerI18n = require("moleculer-i18n-js");
 const path = require("path");
 
 module.exports = {
-	name: "User.graph",
+	name: "Payment.graph",
 
 	version: 1,
 
@@ -17,18 +17,9 @@ module.exports = {
 
 	hooks: {
 		before: {
-			"*": "AuthDefault",
+			"*": ["AuthDefault", "ChangeLanguage"],
 			// registerAdmin: ["AuthAdmin"],
 		},
-		// error: {
-		// 	"*": function (ctx, error) {
-		// 		return {
-		// 			data: [],
-		// 			succeeded: false,
-		// 			message: error.message || String(error),
-		// 		};
-		// 	},
-		// },
 	},
 
 	settings: {
@@ -38,14 +29,14 @@ module.exports = {
 			enum: require("./graph/enum"),
 
 			resolvers: {
-				UserMutation: {
-					Login: {
-						action: "v1.User.graph.login",
+				PaymentMutation: {
+					CreatePayment: {
+						action: "v1.Payment.graph.createPayment",
 					},
 				},
-				UserQuery: {
-					GetUserInfo: {
-						action: "v1.User.graph.getUserInfo",
+				PaymentQuery: {
+					GetPaymentById: {
+						action: "v1.Payment.graph.getPaymentById",
 					},
 				},
 			},
@@ -61,26 +52,18 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-		login: {
-			params: {
-				input: {
-					$$type: "object",
-					email: "string",
-					password: "string",
-					deviceId: "string",
-					language: {
-						type: "string",
-						optional: true,
-					},
-				},
-			},
-			handler: require("./actions/login.graph.action"),
+		createPayment: {
+			handler: require("./actions/createPayment.graph.action"),
 		},
 
-		UserOps: {
+		getPaymentById: {
+			handler: require("./actions/getPaymentById.graph.action"),
+		},
+
+		PaymentOps: {
 			graphql: {
-				mutation: "UserMutation: UserMutation",
-				query: "UserQuery: UserQuery",
+				mutation: "PaymentMutation: PaymentMutation",
+				query: "PaymentQuery: PaymentQuery",
 			},
 			handler(ctx) {
 				return true;
@@ -101,6 +84,7 @@ module.exports = {
 	methods: {
 		AuthDefault: require("./middlewares/auth.default.graph.middleware"),
 		AuthAdmin: require("./middlewares/auth.admin.graph.middleware"),
+		ChangeLanguage: require("./hooks/changeLanguage.graph.hook"),
 	},
 
 	/**

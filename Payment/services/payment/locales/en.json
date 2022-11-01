@@ -11,5 +11,10 @@
     "errorPaymentNotFound": "Not found payment information!",
     "paymentGetSuccess": "Get payment information successfully!",
     "errorPaymentExpired": "Payment expired or update failed, please contact directly!",
-    "paymentUpdateSuccess": "Update successfully!"
+    "paymentUpdateSuccess": "Update successfully!",
+    "errorTokenMissing": "Missing Token!",
+    "errorTokenFormat": "Token invalid!",
+    "errorSessionNotFound": "Not found login session!",
+    "errorTokenExpired": "Token is expired!",
+    "errorTokenExpiredTime": "Expired time does not match!"
 }

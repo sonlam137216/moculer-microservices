@@ -2,6 +2,7 @@ const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
 const walletConstant = require("../constants/wallet.constant");
+const walletI18nConstant = require("../constants/walletI18n.constant");
 
 module.exports = async function (ctx) {
 	console.log("CTX", ctx);
@@ -24,9 +25,7 @@ module.exports = async function (ctx) {
 		if (!walletConstant.SERVICE_NAME_LIST[serviceName]) {
 			return {
 				code: 1001,
-				data: {
-					message: "Service không có trong danh sách",
-				},
+				message: this.__(walletI18nConstant.ERROR_SERVICE_FORBIDDEN),
 			};
 		}
 
@@ -46,9 +45,7 @@ module.exports = async function (ctx) {
 		if (!existingSenderUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "Sender user không tồn tại",
-				},
+				message: this.__(walletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -60,9 +57,7 @@ module.exports = async function (ctx) {
 		if (!existingReceiverUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "Sender user không tồn tại",
-				},
+				message: this.__(walletI18nConstant.RECEIVER_NOT_EXIST),
 			};
 		}
 
@@ -75,9 +70,7 @@ module.exports = async function (ctx) {
 		if (!walletSenderInfo) {
 			return {
 				code: 1001,
-				data: {
-					message: "Sender chưa tạo ví",
-				},
+				message: this.__(walletI18nConstant.ERROR_WALLET_NOT_FOUND),
 			};
 		}
 
@@ -89,16 +82,14 @@ module.exports = async function (ctx) {
 		if (!walletReceiverInfo) {
 			return {
 				code: 1001,
-				data: {
-					message: "Receiver chưa tạo ví",
-				},
+				message: this.__(walletI18nConstant.ERROR_RECEIVER_WALLET),
 			};
 		}
 
 		console.log("walletSenderInfo", walletSenderInfo);
 		console.log("walletReceiverInfo", walletReceiverInfo);
 
-		let message = "Cập nhật tiền ví không thành công";
+		let message = this.__(walletI18nConstant.ERROR_UPDATE_WALLET);
 		let balanceAvailableOfSender = walletSenderInfo.balanceAvailable;
 		let balanceAvailableOfReceiver = walletReceiverInfo.balanceAvailable;
 		let walletHistoryOfSender;
@@ -128,13 +119,13 @@ module.exports = async function (ctx) {
 				if (_.get(walletHistoryOfReceiver, "id", null) === null) {
 					return {
 						code: 1001,
-						data: {
-							message: "Tạo lịch sử không thành công!",
-						},
+						message: this.__(
+							walletI18nConstant.ERROR_WALLET_HISTORY_CREATE
+						),
 					};
 				}
 
-				message = "Cộng tiền ví thành công!";
+				message = this.__(walletI18nConstant.WALLET_ADD_SUCCESS);
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.TRANSFER: {
@@ -179,9 +170,7 @@ module.exports = async function (ctx) {
 					]
 				);
 
-				console.log("walletHistoryOfReceiver", walletHistoryOfReceiver);
-
-				message = "Chuyển tiền thành công!";
+				message = this.__(walletI18nConstant.WALLET_TRANSFER_SUCCESS);
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.SUB: {
@@ -190,9 +179,11 @@ module.exports = async function (ctx) {
 
 				if (balanceAvailableOfReceiver < 0) {
 					isValidBalance = false;
-					message = "Số dư ví hiện tại của ví không dủ";
+					message = this.__(
+						walletI18nConstant.ERROR_NOT_ENOUGH_BALANCE
+					);
 				} else {
-					message = "Trừ tiền ví thành công!";
+					message = this.__(walletI18nConstant.WALLET_SUB_SUCCESS);
 				}
 
 				// create history
@@ -215,16 +206,16 @@ module.exports = async function (ctx) {
 				if (_.get(walletHistoryOfReceiver, "id", null) === null) {
 					return {
 						code: 1001,
-						data: {
-							message: "Tạo lịch sử không thành công!",
-						},
+						message: this.__(
+							walletI18nConstant.ERROR_WALLET_HISTORY_CREATE
+						),
 					};
 				}
 
 				break;
 			}
 			default: {
-				message = "Phương thức cập nhật không hợp lệ";
+				message = this.__(walletI18nConstant.ERROR_WALLET_METHOD);
 				isValidBalance = false;
 				break;
 			}
@@ -340,17 +331,15 @@ module.exports = async function (ctx) {
 
 				return {
 					code: 1000,
-					data: {
-						message: "cập nhật thành công!",
-					},
+					message: this.__(walletI18nConstant.WALLET_UPDATE_SUCCESS),
 				};
 			}
 
 			// udate thành công
 			return {
 				code: 1000,
+				message,
 				data: {
-					message,
 					walletInfo: updatedWalletReceiverInfo,
 				},
 			};
@@ -390,9 +379,7 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1001,
-			data: {
-				message,
-			},
+			message,
 		};
 	} catch (err) {
 		console.log(err);

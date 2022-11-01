@@ -6,9 +6,7 @@ const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { email, password, otp, language } = ctx.params.body;
-
-		if (language && language === "en") this.setLocale(language);
+		const { email, password, otp } = ctx.params.body;
 
 		// verify email
 		const existingUser = await this.broker.call(

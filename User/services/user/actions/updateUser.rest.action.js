@@ -5,9 +5,7 @@ const { MoleculerError } = require("moleculer").Errors;
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
-		const { fullName, gender, language } = ctx.params.body;
-
-		if (language === "en") this.setLocale(language);
+		const { fullName, gender } = ctx.params.body;
 
 		const updatedUser = await this.broker.call(
 			"v1.UserInfoModel.findOneAndUpdate",

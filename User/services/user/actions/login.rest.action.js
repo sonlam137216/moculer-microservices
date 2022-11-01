@@ -8,8 +8,7 @@ const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { email, password, deviceId, language } = ctx.params.body;
-		if (language === "en") this.setLocale(language);
+		const { email, password, deviceId } = ctx.params.body;
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",

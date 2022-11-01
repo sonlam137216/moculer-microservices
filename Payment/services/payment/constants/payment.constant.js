@@ -25,4 +25,8 @@ module.exports = {
 		SUB: "SUB",
 		PAYMENT: "PAYMENT",
 	},
+	ROLE: {
+		ADMIN: "ADMIN",
+		CUSTOMER: "CUSTOMER",
+	},
 };

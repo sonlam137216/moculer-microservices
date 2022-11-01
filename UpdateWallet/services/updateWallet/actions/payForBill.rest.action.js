@@ -2,6 +2,7 @@ const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const generateTransactionId = require("../../../utils/generateTransactionId");
 const updateWalletConstant = require("../constant/updateWallet.constant");
+const updateWalletI18nConstant = require("../constant/updateWalletI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -19,9 +20,7 @@ module.exports = async function (ctx) {
 		if (_.get(existingUser, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy user",
-				},
+				message: this.__(updateWalletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -30,11 +29,17 @@ module.exports = async function (ctx) {
 		});
 
 		if (!existingWallet) {
-			throw new MoleculerError("không tìm thấy ví", 404);
+			throw new MoleculerError(
+				this.__(updateWalletI18nConstant.ERROR_USER_WALLET),
+				404
+			);
 		}
 
 		if (existingWallet.balanceAvailable - transactionAmount < 0) {
-			throw new MoleculerError("Số dư không đủ!", 400);
+			throw new MoleculerError(
+				this.__(updateWalletI18nConstant.ERROR_NOT_ENOUGH_BALANCE),
+				400
+			);
 		}
 
 		const randomTransactionId = generateTransactionId();
@@ -52,7 +57,10 @@ module.exports = async function (ctx) {
 		);
 
 		if (_.get(transactionCreate, "id", null) === null) {
-			throw new MoleculerError("Tạo transaction không thành công!");
+			throw new MoleculerError(
+				this.__(updateWalletI18nConstant.ERROR_TRANSACTION_CREATE),
+				400
+			);
 		}
 
 		const updatedWallet = await this.broker.call(
@@ -85,7 +93,10 @@ module.exports = async function (ctx) {
 		);
 
 		if (_.get(updatedTransaction, "id", null) === null) {
-			throw new MoleculerError("Cập nhật transaction không thành công!");
+			throw new MoleculerError(
+				this.__(updateWalletI18nConstant.ERROR_TRANSACTION_UPDATE),
+				400
+			);
 		}
 
 		return true;

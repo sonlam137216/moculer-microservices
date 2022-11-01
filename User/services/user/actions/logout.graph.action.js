@@ -7,7 +7,7 @@ module.exports = async function (ctx) {
 	try {
 		const { userId, deviceId } = ctx.meta.auth.credentials;
 
-		const language = ctx.params?.input?.language;
+		const language = ctx.params.input?.language;
 
 		if (language && language === "en") this.setLocale(language);
 

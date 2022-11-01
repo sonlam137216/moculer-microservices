@@ -1,9 +1,8 @@
 const _ = require("lodash");
-const userConstant = require("../constants/user.constant");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
-const userSessionConstant = require("../constants/userSession.constant");
-const userI18nConstant = require("../constants/userI18n.constant");
+const paymentConstant = require("../constants/payment.constant");
+const paymentI18nConstant = require("../constants/paymentI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -13,12 +12,12 @@ module.exports = async function (ctx) {
 
 		if (!ctx.meta.auth.credentials.userId) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_TOKEN_MISSING),
+				this.__(paymentI18nConstant.ERROR_TOKEN_MISSING),
 				401
 			);
 		}
 
-		console.log("auth admin");
+		console.log(ctx.meta.auth.credentials.token);
 
 		const tokenInfo = jwt.verify(
 			ctx.meta.auth.credentials.token,
@@ -31,7 +30,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(userInfo, "id", null) === null) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_TOKEN_FORMAT),
+				this.__(paymentI18nConstant.ERROR_TOKEN_FORMAT),
 				401
 			);
 		}
@@ -44,7 +43,7 @@ module.exports = async function (ctx) {
 				{
 					userId: tokenInfo.userId,
 					deviceId: tokenInfo.deviceId,
-					status: userSessionConstant.SESSION_STATUS.ACTIVE,
+					status: paymentConstant.SESSION_STATUS.ACTIVE,
 				},
 			]
 		);
@@ -56,28 +55,28 @@ module.exports = async function (ctx) {
 			_.get(loginSession, "expiredAt", null) === null
 		) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_SESSION_NOT_FOUND),
+				this.__(paymentI18nConstant.ERROR_SESSION_NOT_FOUND),
 				401
 			);
 		}
 		if (!moment(loginSession.expiredAt).isAfter(now)) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_TOKEN_EXPIRED),
+				this.__(paymentI18nConstant.ERROR_TOKEN_EXPIRED),
 				401
 			);
 		}
 
 		if (!moment(loginSession.expiredAt).isSame(tokenInfo.expiredAt)) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_TOKEN_EXPIRED_TIME),
+				this.__(paymentI18nConstant.ERROR_TOKEN_EXPIRED_TIME),
 				401
 			);
 		}
 
 		// check role
-		if (!userInfo.role || userInfo.role !== userConstant.ROLE.ADMIN) {
+		if (!userInfo.role || userInfo.role !== paymentConstant.ROLE.ADMIN) {
 			throw new MoleculerError(
-				this.__(userI18nConstant.ERROR_USER_ROLE),
+				this.__(paymentI18nConstant.ERROR_USER_ROLE),
 				403
 			);
 		}

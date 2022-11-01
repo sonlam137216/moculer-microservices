@@ -3,15 +3,36 @@
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
+const moleculerI18n = require("moleculer-i18n-js");
+const path = require("path");
 
 module.exports = {
 	name: "Insight",
 
 	version: 1,
+
+	mixins: [moleculerI18n],
+
+	i18n: {
+		directory: path.join(__dirname, "locales"),
+		locales: ["vi", "en"],
+		defaultLocale: "vi",
+	},
+
 	/**
 	 * Settings
 	 */
 	settings: {},
+
+	hooks: {
+		before: {
+			"*": ["changeLanguage"],
+		},
+	},
+
+	methods: {
+		changeLanguage: require("./hooks/changeLanguage.rest.hook"),
+	},
 
 	/**
 	 * Dependencies
@@ -38,6 +59,7 @@ module.exports = {
 					fromDate: "string",
 					toDate: "string",
 					method: "string|optional",
+					language: "string|optional",
 				},
 			},
 			timeout: 60000,
@@ -60,6 +82,7 @@ module.exports = {
 					fromDate: "string",
 					toDate: "string",
 					method: "string|optional",
+					language: "string|optional",
 				},
 			},
 			timeout: 60000,
@@ -82,6 +105,7 @@ module.exports = {
 					fromDate: "string",
 					toDate: "string",
 					method: "string|optional",
+					language: "string|optional",
 				},
 			},
 			timeout: 60000,
@@ -104,6 +128,7 @@ module.exports = {
 					fromDate: "string",
 					toDate: "string",
 					method: "string|optional",
+					language: "string|optional",
 				},
 			},
 			timeout: 90000,
@@ -131,11 +156,6 @@ module.exports = {
 	 * Events
 	 */
 	events: {},
-
-	/**
-	 * Methods
-	 */
-	methods: {},
 
 	/**
 	 * Service created lifecycle event handler

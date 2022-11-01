@@ -1,0 +1,20 @@
+{
+    "emailNotExist": "Email not exist",
+    "userNotExist": "User not exist!",
+    "receiverNotExist": "Receiver not exist!",
+    "otpNotExist": "Otp not exist!",
+    "getInfoSuccess": "Get information successfully!",
+    "errorWalletNotFound": "Wallet not exist!",
+    "errorServiceForbidden": "Service does not have permission!",
+    "errorUserWalletExisting": "Wallet existed!",
+    "walletCreateSuccess": "Create wallet successfully!",
+    "errorReceiverWallet": "Receiver's wallet not exist!",
+    "errorNotEnoughBalance": "Not enough balance",
+    "errorUpdateWallet": "Update wallet failed!",
+    "errorWalletHistoryCreate": "Create wallet history failed!",
+    "errorWalletMethod": "Method update not allow!",
+    "walletAddSuccess": "Deposit successfully",
+    "walletSubSuccess": "Withdraw successfully",
+    "walletTransferSuccess": "Transfer successfully!",
+    "walletUpdateSuccess": "Update successfully!"
+}

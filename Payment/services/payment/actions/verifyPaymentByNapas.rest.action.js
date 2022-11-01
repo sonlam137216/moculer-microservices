@@ -1,5 +1,6 @@
 const _ = require("lodash");
 const paymentConstant = require("../constants/payment.constant");
+const paymentI18nConstant = require("../constants/paymentI18n.constant");
 const MoleculerError = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -34,18 +35,13 @@ module.exports = async function (ctx) {
 		if (!updatedPayment) {
 			return {
 				code: 1001,
-				data: {
-					message:
-						"Payment hết hạn hoặc cập nhật không thành công, vui lòng liên hệ trực tiếp!",
-				},
+				message: this.__(paymentI18nConstant.ERROR_PAYMENT_EXPIRED),
 			};
 		}
 
 		return {
 			code: 1000,
-			data: {
-				message: "Cập nhật thành công",
-			},
+			message: this.__(paymentI18nConstant.PAYMENT_UPDATE_SUCCESS),
 		};
 	} catch (err) {
 		console.log("ERR", err);

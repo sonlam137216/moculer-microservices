@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const MoleculerError = require("moleculer").Errors;
-const moment = require("moment");
+const paymentI18nConstant = require("../constants/paymentI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -9,9 +9,6 @@ module.exports = async function (ctx) {
 		const {
 			params: { id },
 		} = ctx.params;
-
-		this.setLocale("vi");
-		console.log("I18N", this.__("error"));
 
 		// check UserID
 		const existingUser = await this.broker.call(
@@ -22,9 +19,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại!",
-				},
+				message: this.__(paymentI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -36,16 +31,14 @@ module.exports = async function (ctx) {
 		if (!paymentInfo) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy thông tin thanh toán!",
-				},
+				message: this.__(paymentI18nConstant.ERROR_PAYMENT_NOT_FOUND),
 			};
 		}
 
 		return {
 			code: 1000,
+			message: this.__(paymentI18nConstant.PAYMENT_GET_SUCCESS),
 			data: {
-				message: "Lấy thông tin thanh toán thành công!",
 				paymentInfo,
 			},
 		};

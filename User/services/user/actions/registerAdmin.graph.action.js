@@ -6,6 +6,7 @@ const validatePhoneNumber = require("../../../utils/validatePhoneNumber");
 const moment = require("moment");
 const md5 = require("md5");
 const userConstant = require("../constants/user.constant");
+const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -14,19 +15,15 @@ module.exports = async function (ctx) {
 
 		if (!validateEmail(email)) {
 			return {
-				code: 1001,
-				data: {
-					message: "Email không hợp lệ!",
-				},
+				succeeded: false,
+				message: this.__(userI18nConstant.ERROR_EMAIL_FORMAT),
 			};
 		}
 
 		if (!validatePhoneNumber(phone)) {
 			return {
-				code: 1001,
-				data: {
-					message: "Số điện thoại không đúng định dạng!",
-				},
+				succeeded: false,
+				message: this.__(userI18nConstant.ERROR_PHONE_FORMAT),
 			};
 		}
 
@@ -37,10 +34,8 @@ module.exports = async function (ctx) {
 
 		if (existingEmailOrPhone) {
 			return {
-				code: 1001,
-				data: {
-					message: "Email hoặc số điện thoại đã tồn tại",
-				},
+				succeeded: false,
+				message: this.__(userI18nConstant.EMAIL_OR_PHONE_EXISTED),
 			};
 		}
 
@@ -55,7 +50,6 @@ module.exports = async function (ctx) {
 			role: userConstant.ROLE.ADMIN,
 			deviceIds: [deviceId],
 		};
-		console.log("CREATE", createObj);
 
 		const userCreate = await this.broker.call("v1.UserInfoModel.create", [
 			createObj,
@@ -63,10 +57,8 @@ module.exports = async function (ctx) {
 
 		if (_.get(userCreate, "id", null) === null) {
 			return {
-				code: 1001,
-				data: {
-					message: "Tạo tài khoản không thành công",
-				},
+				succeeded: false,
+				message: this.__(userI18nConstant.ERROR_USER_CREATE),
 			};
 		}
 
@@ -83,11 +75,8 @@ module.exports = async function (ctx) {
 
 		if (_.get(sessionCreate, "id", null) === null) {
 			return {
-				code: 1001,
-				data: {
-					message:
-						"Không thể tạo phiên đăng nhập, vui lòng đăng nhập lại",
-				},
+				succeeded: false,
+				message: this.__(userI18nConstant.ERROR_LOGIN_SESSION),
 			};
 		}
 
@@ -102,10 +91,9 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
+			succeeded: true,
+			message: this.__(userI18nConstant.USER_CREATE_SUCCESS),
 			data: {
-				message: "Tạo tài khoản thành công!",
-				// accessToken: accessToken,
 				userInfo,
 			},
 		};

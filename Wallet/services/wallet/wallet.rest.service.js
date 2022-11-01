@@ -3,6 +3,8 @@
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
+const moleculerI18n = require("moleculer-i18n-js");
+const path = require("path");
 
 const moleculerRabbitmq = require("moleculer-rabbitmq");
 
@@ -16,7 +18,13 @@ module.exports = {
 
 	version: 1,
 
-	mixins: [queueMixin],
+	mixins: [queueMixin, moleculerI18n],
+
+	i18n: {
+		directory: path.join(__dirname, "locales"),
+		locales: ["vi", "en"],
+		defaultLocale: "vi",
+	},
 
 	/**
 	 * Settings
