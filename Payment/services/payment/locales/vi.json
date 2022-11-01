@@ -12,9 +12,9 @@
     "paymentGetSuccess": "Lấy thông tin thanh toán thành công!",
     "errorPaymentExpired": "Payment hết hạn hoặc cập nhật không thành công, vui lòng liên hệ trực tiếp!",
     "paymentUpdateSuccess": "Cập nhật thành công",
-    "errorTokenMissing": "Missing Token!",
-    "errorTokenFormat": "Token invalid!",
-    "errorSessionNotFound": "Not found login session!",
-    "errorTokenExpired": "Token is expired!",
-    "errorTokenExpiredTime": "Expired time does not match!"
+    "errorTokenMissing": "Không tìm thấy token!",
+    "errorTokenFormat": "Token không hợp lệ!",
+    "errorSessionNotFound": "Không tìm thấy phiên đăng nhập!",
+    "errorTokenExpired": "Token đã hết hạn!",
+    "errorTokenExpiredTime": "Token không trùng khớp!"
 }

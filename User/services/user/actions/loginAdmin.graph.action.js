@@ -92,7 +92,7 @@ module.exports = async function (ctx) {
 
 		if (_.get(sessionCreate, "id", null) === null) {
 			return {
-				code: 1001,
+				succeeded: false,
 				message: this.__(userI18nConstant.ERROR_LOGIN_SESSION),
 			};
 		}
@@ -108,7 +108,7 @@ module.exports = async function (ctx) {
 		]);
 
 		return {
-			code: 1000,
+			succeeded: true,
 			message: this.__(userI18nConstant.LOGIN_SUCCESS),
 			userInfo,
 			accessToken: accessToken,

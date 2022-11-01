@@ -1,5 +1,6 @@
 const _ = require("lodash");
 const userSessionConstant = require("../../userSession/constants/userSession.constant");
+const userI18nConstant = require("../constants/userI18n.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -23,17 +24,13 @@ module.exports = async function (ctx) {
 		if (!updatedUserSession) {
 			return {
 				code: 1001,
-				data: {
-					message: "Logout không thành công!",
-				},
+				message: this.__(userI18nConstant.ERROR_USER_LOGOUT),
 			};
 		}
 
 		return {
 			code: 1000,
-			data: {
-				message: "Logout thành công!",
-			},
+			message: this.__(userI18nConstant.USER_LOGOUT_SUCCESS),
 		};
 	} catch (err) {
 		console.log("ERR", err);

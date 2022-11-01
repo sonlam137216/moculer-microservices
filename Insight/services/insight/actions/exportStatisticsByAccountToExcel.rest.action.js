@@ -2,6 +2,7 @@ const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const excelJs = require("exceljs");
 const moment = require("moment");
+const insightConstant = require("../constant/insight.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -73,9 +74,9 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1000,
+			message: this.__(insightConstant.INSIGHT_CREATE_SUCCESS),
 			data: {
-				message: "Export file success",
-				paths: `${path}/statistics_by_accountId_${fromDate}-${toDate}.xlsx`,
+				path: `${path}/statistics_by_accountId_${fromDate}-${toDate}.xlsx`,
 			},
 		};
 	} catch (err) {

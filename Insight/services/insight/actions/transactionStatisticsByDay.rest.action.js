@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const insightConstant = require("../constant/insight.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -91,16 +92,14 @@ module.exports = async function (ctx) {
 		if (!paymentDetails) {
 			return {
 				code: 1001,
-				data: {
-					message: "Tạo thống kê không thành công!",
-				},
+				message: this.__(insightConstant.ERROR_INSIGHT_CREATE),
 			};
 		}
 
 		return {
 			code: 1000,
+			message: this.__(insightConstant.INSIGHT_CREATE_SUCCESS),
 			data: {
-				message: "thanh cong",
 				payments: paymentDetails,
 			},
 		};

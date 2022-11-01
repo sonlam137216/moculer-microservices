@@ -2,13 +2,12 @@ const _ = require("lodash");
 const updateWalletConstant = require("../constant/updateWallet.constant");
 const { MoleculerError } = require("moleculer").Errors;
 const axios = require("axios");
+const updateWalletI18nConstant = require("../constant/updateWalletI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
 		const { userId } = ctx.meta.auth.credentials;
 		const { otp, transactionId } = ctx.params.body;
-
-		console.log(ctx.service.name);
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -22,9 +21,7 @@ module.exports = async function (ctx) {
 		if (_.get(existingUser, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại!",
-				},
+				message: this.__(updateWalletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -42,9 +39,10 @@ module.exports = async function (ctx) {
 		if (_.get(existingTransaction, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy thông tin transaction!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_NOT_FOUND
+				),
+				data: {},
 			};
 		}
 
@@ -58,21 +56,17 @@ module.exports = async function (ctx) {
 			}
 		);
 
-		console.log("verifyTransactionFromBank", verifyTransactionFromBank);
-
 		if (!verifyTransactionFromBank) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không thể lấy thông tin từ ngân hàng!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_RESPONSE_FROM_BANK
+				),
+				data: {},
 			};
 		}
 
 		const { success } = verifyTransactionFromBank;
-
-		// verifyTransactionFromBank.data.data.transactionInfo;
-		console.log("SUCCESS", success);
 
 		if (success === true) {
 			const updatedTransaction = await this.broker.call(
@@ -96,10 +90,9 @@ module.exports = async function (ctx) {
 			if (_.get(updatedTransaction, "id", null) === null) {
 				return {
 					code: 1001,
-					data: {
-						message:
-							"Cập nhật transaction không thành công [server]",
-					},
+					message: this.__(
+						updateWalletI18nConstant.ERROR_TRANSACTION_UPDATE
+					),
 				};
 			}
 
@@ -114,17 +107,17 @@ module.exports = async function (ctx) {
 
 			return {
 				code: 1000,
-				data: {
-					message: "Giao dịch thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.TRANSACTION_CONFIRM_SUCCESS
+				),
 			};
 		}
 
 		return {
 			code: 1001,
-			data: {
-				message: "Giao dịch không thành công!",
-			},
+			message: this.__(
+				updateWalletI18nConstant.TRANSACTION_VERIFY_FAILED
+			),
 		};
 	} catch (err) {
 		console.log("ERR", err);

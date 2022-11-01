@@ -3,6 +3,7 @@ const _ = require("lodash");
 const generateTransactionId = require("../../../utils/generateTransactionId");
 const updateWalletConstant = require("../constant/updateWallet.constant");
 const { MoleculerError } = require("moleculer").Errors;
+const updateWalletI18nConstant = require("../constant/updateWalletI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -18,9 +19,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại",
-				},
+				message: this.__(updateWalletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -32,9 +31,7 @@ module.exports = async function (ctx) {
 		if (!existingWallet) {
 			return {
 				code: 1001,
-				data: {
-					message: "User chưa tạo ví",
-				},
+				message: this.__(updateWalletI18nConstant.ERROR_USER_WALLET),
 			};
 		}
 
@@ -58,9 +55,9 @@ module.exports = async function (ctx) {
 		if (_.get(transactionCreate, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Tạo transaction không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_CREATE
+				),
 			};
 		}
 
@@ -81,9 +78,9 @@ module.exports = async function (ctx) {
 		if (!transactionResponseFromBank) {
 			return {
 				code: 1001,
-				data: {
-					message: "Tạo giao dịch với ngân hàng không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_RESPONSE_FROM_BANK
+				),
 			};
 		}
 
@@ -116,16 +113,18 @@ module.exports = async function (ctx) {
 		if (_.get(updatedTransaction, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Cập nhật giao dịch không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_UPDATE
+				),
 			};
 		}
 
 		return {
 			code: 1000,
 			data: {
-				message: "Gửi thông tin qua ngân hàng!",
+				message: this.__(
+					updateWalletI18nConstant.TRANSFER_TRANSACTION_TO_BANK
+				),
 				userInfo,
 				walletInfo,
 				transactionInfo: updatedTransaction,

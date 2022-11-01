@@ -1,19 +1,45 @@
 const gql = require("moleculer-apollo-server").moleculerGql;
 module.exports = gql`
-	type UserMutation {
-		"Đăng nhập"
-		Login(input: UserLoginInput!): UserLoginResponse
+	type PaymentMutation {
+		"Tạo đơn thanh toán"
+		CreatePayment(input: PaymentCreateInput!): PaymentCreateResponse
 	}
 
-	type UserQuery {
-		"Lấy thông tin user"
-		GetUserInfo(input: UserGetInfoInput!): UserGetInfoResponse
+	type PaymentQuery {
+		"Lấy thông tin thanh toán theo ID"
+		GetPaymentById(input: PaymentGetByIdInput!): PaymentGetByIdResponse
 	}
 
-	type UserLoginResponse {
+	type PaymentCreateResponse {
 		message: String
 		succeeded: Boolean
-		userInfo: UserInfo
-		accessToken: String
+		paymentInfo: PaymentInfo
+		url: String
+	}
+
+	type PaymentGetByIdResponse {
+		message: String
+		succeeded: Boolean
+		paymentInfo: PaymentInfo
+	}
+
+	type PaymentInfo {
+		supplierResponse: PaymentSupplierResponse
+		totalPrice: Int
+		description: String
+		note: String
+		status: PaymentStatusEnum
+		paymentMethod: PaymentMethodEnum
+		id: Int
+		userId: Int
+	}
+
+	type PaymentSupplierResponse {
+		transaction: SupplierResponseTransaction
+		responseStatus: Boolean
+	}
+	type SupplierResponseTransaction {
+		description: String
+		transactionId: String
 	}
 `;

@@ -3,11 +3,31 @@
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
  */
+const moleculerI18n = require("moleculer-i18n-js");
+const path = require("path");
 
 module.exports = {
 	name: "UpdateWallet",
 
 	version: 1,
+
+	mixins: [moleculerI18n],
+
+	i18n: {
+		directory: path.join(__dirname, "locales"),
+		locales: ["vi", "en"],
+		defaultLocale: "vi",
+	},
+
+	hooks: {
+		before: {
+			"*": ["changeLanguage"],
+		},
+	},
+
+	methods: {
+		changeLanguage: require("./hooks/changeLanguage.rest.hook"),
+	},
 
 	/**
 	 * Settings
@@ -152,11 +172,6 @@ module.exports = {
 	 * Events
 	 */
 	events: {},
-
-	/**
-	 * Methods
-	 */
-	methods: {},
 
 	/**
 	 * Service created lifecycle event handler

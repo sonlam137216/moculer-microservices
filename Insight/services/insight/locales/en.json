@@ -1,0 +1,16 @@
+{
+    "emailNotExist": "Email not exist!",
+    "userNotExist": "User not exist!",
+    "otpNotExist": "Otp not exist!",
+    "getInfoSuccess": "Get information successfully!",
+    "userUpdateSuccess": "Update user information successfully!",
+    "errorTokenMissing": "Missing token!",
+    "errorTokenFormat": "Token invalid!",
+    "errorSessionNotFound": "Not found login session!",
+    "errorTokenExpired": "Token expired!",
+    "errorTokenExpiredTime": "Expired time does not match!",
+    "errorInsightCreate": "Create Statistic failed!",
+    "insightCreateSuccess": "Create Statistic!",
+    "exportFileSuccess": "Export to excel successfully!",
+    "errorUserRole": "Error user role"
+}

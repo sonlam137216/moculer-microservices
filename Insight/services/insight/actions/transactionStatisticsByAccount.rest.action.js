@@ -4,7 +4,6 @@ const moment = require("moment");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("CTX", ctx.params);
 		const { fromDate, toDate, method } = ctx.params.body;
 
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();

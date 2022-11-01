@@ -11,4 +11,8 @@ module.exports = {
 		PROCESSING: "PROCESSING",
 		FAILED: "FAILED",
 	},
+	SESSION_STATUS: {
+		ACTIVE: "ACTIVE",
+		EXPIRED: "EXPIRED",
+	},
 };

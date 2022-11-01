@@ -1,11 +1,14 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const walletI18nConstant = require("../constants/walletI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { paymentMethods } = ctx.params.body;
+		const { paymentMethods, language } = ctx.params.body;
 		const { userId } = ctx.meta.auth.credentials;
+
+		if (language && language === "en") this.setLocale(language);
 
 		// check userId
 		const existingUser = await this.broker.call(
@@ -16,9 +19,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại",
-				},
+				message: this.__(walletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -31,9 +32,8 @@ module.exports = async function (ctx) {
 		if (existingWallet) {
 			return {
 				code: 1001,
-				data: {
-					message: "User đã có ví",
-				},
+				message: this.__(walletI18nConstant.ERROR_USER_WALLET_EXISTED),
+				data: {},
 			};
 		}
 
@@ -49,8 +49,8 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1000,
+			message: this.__(walletI18nConstant.WALLET_CREATE_SUCCESS),
 			data: {
-				message: "Tạo Wallet thành công",
 				walletInfo: walletCreate,
 			},
 		};

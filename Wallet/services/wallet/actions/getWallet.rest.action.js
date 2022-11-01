@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const walletI18nConstant = require("../constants/walletI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -14,9 +15,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại",
-				},
+				message: this.__(walletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -29,16 +28,14 @@ module.exports = async function (ctx) {
 		if (!walletInfo) {
 			return {
 				code: 1001,
-				data: {
-					message: "User chưa tạo ví",
-				},
+				message: this.__(walletI18nConstant.ERROR_WALLET_NOT_FOUND),
 			};
 		}
 
 		return {
 			code: 1000,
+			message: this.__(walletI18nConstant.GET_INFO_SUCCESS),
 			data: {
-				message: "Lấy thông tin thành công",
 				walletInfo,
 			},
 		};

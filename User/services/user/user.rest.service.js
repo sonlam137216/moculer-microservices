@@ -23,21 +23,14 @@ module.exports = {
 
 	hooks: {
 		before: {
+			"*": ["changeLanguage"],
 			getUserInfo: ["checkValidDeviceId"],
 		},
-		// error: {
-		// 	"*": function (ctx, error) {
-		// 		return {
-		// 			data: [],
-		// 			succeeded: false,
-		// 			message: error.message || String(error),
-		// 		};
-		// 	},
-		// },
 	},
 
 	methods: {
 		checkValidDeviceId: require("./hooks/checkValidDeviceId.hook"),
+		changeLanguage: require("./hooks/changeLanguage.rest.hook"),
 	},
 
 	actions: {

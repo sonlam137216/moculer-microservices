@@ -5,6 +5,7 @@ const moment = require("moment");
 const userSessionConstant = require("../constants/userSession.constant");
 const md5 = require("md5");
 const userConstant = require("../constants/user.constant");
+const userI18nConstant = require("../constants/userI18n.constant");
 
 module.exports = async function (ctx) {
 	try {
@@ -18,9 +19,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "Email không tồn tại!",
-				},
+				message: this.__(userI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -30,9 +29,7 @@ module.exports = async function (ctx) {
 		) {
 			return {
 				code: 1001,
-				data: {
-					message: "Role không đúng!",
-				},
+				message: this.__(userI18nConstant.ERROR_USER_ROLE),
 			};
 		}
 
@@ -41,9 +38,7 @@ module.exports = async function (ctx) {
 		if (hashedPassword !== existingUser.password) {
 			return {
 				code: 1001,
-				data: {
-					message: "Mật khẩu không chính xác!",
-				},
+				message: this.__(userI18nConstant.WRONG_PASSWORD),
 			};
 		}
 
@@ -66,10 +61,7 @@ module.exports = async function (ctx) {
 			if (_.get(updatedUser, "id", null)) {
 				return {
 					code: 1001,
-					data: {
-						message:
-							"Cập nhật device không thành công, vui lòng đăng nhập lại!",
-					},
+					message: this.__(userI18nConstant.ERROR_UPDATE_DEVICE),
 				};
 			}
 		}
@@ -99,9 +91,7 @@ module.exports = async function (ctx) {
 		if (_.get(sessionCreate, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không thể tạo phiên đăng nhập, vui lòng thử lại",
-				},
+				message: this.__(userI18nConstant.ERROR_LOGIN_SESSION),
 			};
 		}
 
@@ -117,8 +107,8 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1000,
+			message: this.__(userI18nConstant.LOGIN_SUCCESS),
 			data: {
-				message: "Login thành công!",
 				userInfo,
 				accessToken: accessToken,
 			},

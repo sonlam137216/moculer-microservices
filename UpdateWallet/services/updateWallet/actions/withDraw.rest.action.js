@@ -2,6 +2,7 @@ const { default: axios } = require("axios");
 const _ = require("lodash");
 const generateTransactionId = require("../../../utils/generateTransactionId");
 const updateWalletConstant = require("../constant/updateWallet.constant");
+const updateWalletI18nConstant = require("../constant/updateWalletI18n.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -18,9 +19,7 @@ module.exports = async function (ctx) {
 		if (!existingUser) {
 			return {
 				code: 1001,
-				data: {
-					message: "User không tồn tại",
-				},
+				message: this.__(updateWalletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -32,19 +31,16 @@ module.exports = async function (ctx) {
 		if (!existingWallet) {
 			return {
 				code: 1001,
-				data: {
-					message: "User chưa tạo ví",
-				},
+				message: this.__(updateWalletI18nConstant.ERROR_USER_WALLET),
 			};
 		}
 
 		if (existingWallet.balanceAvailable - transactionAmount < 0) {
 			return {
 				code: 1001,
-				data: {
-					message:
-						"Số dư hiện tại không đủ, vui lòng nạp thêm tiền vào tài khoản!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_NOT_ENOUGH_BALANCE
+				),
 			};
 		}
 
@@ -68,9 +64,9 @@ module.exports = async function (ctx) {
 		if (_.get(transactionCreate, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Tạo transaction không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_CREATE
+				),
 			};
 		}
 
@@ -94,9 +90,9 @@ module.exports = async function (ctx) {
 		if (!transactionResponseFromBank) {
 			return {
 				code: 1001,
-				data: {
-					message: "Tạo giao dịch với ngân hàng không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_RESPONSE_FROM_BANK
+				),
 			};
 		}
 
@@ -129,16 +125,16 @@ module.exports = async function (ctx) {
 		if (_.get(updatedTransaction, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Cập nhật giao dịch không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_UPDATE
+				),
 			};
 		}
 
 		return {
 			code: 1000,
+			message: this.__(updateWalletI18nConstant.SEND_INFO_TO_BANK),
 			data: {
-				message: "Gửi thông tin qua ngân hàng!",
 				userInfo,
 				walletInfo,
 				transactionInfo: updatedTransaction,

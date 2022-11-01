@@ -1,0 +1,16 @@
+{
+    "emailNotExist": "Email không tồn tại!",
+    "userNotExist": "Người dùng không tồn tại!",
+    "otpNotExist": "Otp không tồn tại!",
+    "getInfoSuccess": "Lấy thông tin thành công!",
+    "userUpdateSuccess": "Cập nhật thông tin người dùng thành công!",
+    "errorTokenMissing": "Không có token!",
+    "errorTokenFormat": "Token không hợp lệ!",
+    "errorSessionNotFound": "Không tìm thấy phiên đăng nhập!",
+    "errorTokenExpired": "Token đã hết hạn!",
+    "errorTokenExpiredTime": "Thời gian expired token không đúng!",
+    "errorInsightCreate": "Tạo thống kê không thành công!",
+    "insightCreateSuccess": "Tạo thống kê thành công!",
+    "exportFileSuccess": "Xuất file excel thành công!",
+    "errorUserRole": "Phân quyền không đúng!"
+}

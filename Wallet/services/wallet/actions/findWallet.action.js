@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const walletI18nConstant = require("../constants/walletI18n.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -10,7 +11,10 @@ module.exports = async function (ctx) {
 		);
 
 		if (_.get(existingWallet, "id", null) === null) {
-			throw new MoleculerError("không tồn tại ví!", 404);
+			throw new MoleculerError(
+				this.__(walletI18nConstant.ERROR_WALLET_NOT_FOUND),
+				404
+			);
 		}
 
 		return true;

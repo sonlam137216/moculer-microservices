@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const md5 = require("md5");
 const updateWalletConstant = require("../constant/updateWallet.constant");
+const updateWalletI18nConstant = require("../constant/updateWalletI18n.constant");
 const { MoleculerError } = require("moleculer").Errors;
 
 module.exports = async function (ctx) {
@@ -8,8 +9,6 @@ module.exports = async function (ctx) {
 		// receive OTP
 		const { otp, transactionId, receiverId } = ctx.params.body;
 		const { userId } = ctx.meta.auth.credentials;
-
-		console.log(ctx.service.name);
 
 		const existingUser = await this.broker.call(
 			"v1.UserInfoModel.findOne",
@@ -23,9 +22,7 @@ module.exports = async function (ctx) {
 		if (_.get(existingUser, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy user!",
-				},
+				message: this.__(updateWalletI18nConstant.USER_NOT_EXIST),
 			};
 		}
 
@@ -41,9 +38,7 @@ module.exports = async function (ctx) {
 		if (_.get(existingReceiverUser, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy thông tin người nhận!",
-				},
+				message: this.__(updateWalletI18nConstant.RECEIVER_NOT_EXIST),
 			};
 		}
 
@@ -60,9 +55,9 @@ module.exports = async function (ctx) {
 		if (_.get(existingTransaction, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "Không tìm thấy transaction",
-				},
+				message: this.__(
+					updateWalletI18nConstant.ERROR_TRANSACTION_NOT_FOUND
+				),
 			};
 		}
 
@@ -78,18 +73,16 @@ module.exports = async function (ctx) {
 		if (_.get(existingOtp, "id", null) === null) {
 			return {
 				code: 1001,
-				data: {
-					message: "OTP đã hết hạn!",
-				},
+				message: this.__(updateWalletI18nConstant.ERROR_OTP_EXPIRED),
+				data: {},
 			};
 		}
 
 		if (md5(otp) !== existingOtp.otp) {
 			return {
 				code: 1001,
-				data: {
-					message: "OTP không trùng khớp!",
-				},
+				message: this.__(updateWalletI18nConstant.ERROR_OTP_NOT_MATCH),
+				data: {},
 			};
 		}
 
@@ -148,16 +141,19 @@ module.exports = async function (ctx) {
 			);
 			return {
 				code: 1001,
-				data: {
-					message: "Cập nhật transaction không thành công!",
-				},
+				message: this.__(
+					updateWalletI18nConstant.TRANSACTION_VERIFY_FAILED
+				),
+				data: {},
 			};
 		}
 
 		return {
 			code: 1000,
+			message: this.__(
+				updateWalletI18nConstant.TRANSACTION_VERIFY_SUCCESS
+			),
 			data: {
-				message: "Thành công!",
 				transactionInfo: updatedTransaction,
 			},
 		};

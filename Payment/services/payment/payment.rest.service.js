@@ -29,6 +29,16 @@ module.exports = {
 		defaultLocale: "vi",
 	},
 
+	hooks: {
+		before: {
+			"*": ["changeLanguage"],
+		},
+	},
+
+	methods: {
+		changeLanguage: require("./hooks/changeLanguage.rest.hook"),
+	},
+
 	// crons
 	crons: [
 		{
@@ -75,6 +85,10 @@ module.exports = {
 					description: "string",
 					note: "string",
 					paymentMethod: "string",
+					language: {
+						type: "string",
+						optional: true,
+					},
 				},
 			},
 			timeout: 30000,
@@ -93,6 +107,10 @@ module.exports = {
 					$$type: "object",
 					paymentId: "number",
 					response: "object",
+					language: {
+						type: "string",
+						optional: true,
+					},
 				},
 			},
 			timeout: 30000,
@@ -153,11 +171,6 @@ module.exports = {
 	 * Events
 	 */
 	events: {},
-
-	/**
-	 * Methods
-	 */
-	methods: {},
 
 	/**
 	 * Service created lifecycle event handler

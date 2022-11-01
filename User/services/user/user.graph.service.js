@@ -17,7 +17,7 @@ module.exports = {
 
 	hooks: {
 		before: {
-			"*": "AuthDefault",
+			"*": ["AuthDefault", "ChangeLanguage"],
 			registerAdmin: ["AuthAdmin"],
 		},
 		// error: {
@@ -238,6 +238,7 @@ module.exports = {
 	methods: {
 		AuthDefault: require("./middlewares/auth.default.graph.middleware"),
 		AuthAdmin: require("./middlewares/auth.admin.graph.middleware"),
+		ChangeLanguage: require("./hooks/changeLanguage.graph.hook"),
 	},
 
 	/**
