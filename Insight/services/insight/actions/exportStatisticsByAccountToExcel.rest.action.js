@@ -6,7 +6,7 @@ const insightConstant = require("../constant/insight.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { fromDate, toDate, method } = ctx.params.body;
+		const { fromDate, toDate, accountId } = ctx.params.body;
 
 		// excelJS
 		const options = {
@@ -49,7 +49,7 @@ module.exports = async function (ctx) {
 			data: { accountsAndPayments },
 		} = await this.broker.call(
 			"v1.Insight.transactionStatisticsByAccount",
-			{ body: { fromDate, toDate, method } }
+			{ body: { fromDate, toDate, accountId } }
 		);
 
 		// add data to excel

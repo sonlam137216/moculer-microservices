@@ -44,6 +44,9 @@ module.exports = {
 					ExportToExcelTransactionStatisticsByDay: {
 						action: "v1.Insight.graph.exportToExcelTransactionStatisticsByDay",
 					},
+					ExportToExcelTransactionStatisticsByAccount: {
+						action: "v1.Insight.graph.exportToExcelTransactionStatisticsByAccount",
+					},
 				},
 			},
 		},
@@ -62,12 +65,16 @@ module.exports = {
 			handler: require("./actions/transactionStatisticsByDay.graph.action"),
 		},
 
-		GetTransactionStatisticsByAccount: {
+		getTransactionStatisticsByAccount: {
 			handler: require("./actions/transactionStatisticsByAccount.graph.action"),
 		},
 
 		exportToExcelTransactionStatisticsByDay: {
 			handler: require("./actions/exportStatisticsByDayToExcel.graph.action"),
+		},
+
+		exportToExcelTransactionStatisticsByAccount: {
+			handler: require("./actions/exportStatisticsByAccountToExcel.graph.action"),
 		},
 
 		hello: {

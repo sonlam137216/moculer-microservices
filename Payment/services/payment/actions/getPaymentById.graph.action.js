@@ -21,22 +21,41 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		const paymentInfo = await this.broker.call(
+		const paymentExisting = await this.broker.call(
 			"v1.PaymentInfoModel.findOne",
 			[{ id, userId }]
 		);
 
-		if (!paymentInfo) {
+		if (!paymentExisting) {
 			return {
 				succeeded: false,
 				message: this.__(paymentI18nConstant.ERROR_PAYMENT_NOT_FOUND),
 			};
 		}
 
+		const paymentInfo = _.pick(paymentExisting, [
+			"supplierResponse",
+			"supplierTransaction",
+			"totalPrice",
+			"description",
+			"note",
+			"paymentMethod",
+			"status",
+			"id",
+		]);
+
+		const userInfo = _.pick(existingUser, [
+			"id",
+			"fullName",
+			"email",
+			"phone",
+			"gender",
+		]);
+
 		return {
 			succeeded: true,
 			message: this.__(paymentI18nConstant.PAYMENT_GET_SUCCESS),
-			paymentInfo,
+			paymentInfo: { ...paymentInfo, userInfo },
 		};
 	} catch (err) {
 		console.log("ERR", err);

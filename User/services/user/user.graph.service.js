@@ -250,6 +250,7 @@ module.exports = {
 			"register",
 			"UserOps",
 			"forgotPassword",
+			"loginAdmin",
 		];
 	},
 

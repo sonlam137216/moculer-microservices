@@ -37,6 +37,7 @@ module.exports = async function (ctx) {
 		let message = "";
 		let isSuccess = false;
 		let walletInfo = {};
+		let userInfo = {};
 		let paymentInfo = {};
 		let url = "";
 
@@ -113,7 +114,24 @@ module.exports = async function (ctx) {
 					paymentI18nConstant.PAY_FOR_BILL_IN_WALLET_SUCCESS
 				);
 				walletInfo = updatedWallet;
-				paymentInfo = paymentCreate;
+				paymentInfo = _.pick(paymentCreate, [
+					"supplierResponse",
+					"supplierTransaction",
+					"totalPrice",
+					"description",
+					"note",
+					"paymentMethod",
+					"status",
+					"id",
+				]);
+
+				userInfo = _.pick(existingUser, [
+					"id",
+					"fullName",
+					"email",
+					"phone",
+					"gender",
+				]);
 
 				break;
 			}
@@ -151,10 +169,8 @@ module.exports = async function (ctx) {
 			? {
 					succeeded: true,
 					message,
-					data: {
-						paymentInfo,
-						url,
-					},
+					paymentInfo: { ...paymentInfo, userInfo: userInfo },
+					url,
 			  }
 			: {
 					succeeded: false,
