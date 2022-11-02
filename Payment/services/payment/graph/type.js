@@ -31,7 +31,7 @@ module.exports = gql`
 		status: PaymentStatusEnum
 		paymentMethod: PaymentMethodEnum
 		id: Int
-		userId: Int
+		userInfo: UserInfo
 	}
 
 	type PaymentSupplierResponse {

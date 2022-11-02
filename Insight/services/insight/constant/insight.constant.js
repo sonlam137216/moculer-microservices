@@ -13,6 +13,7 @@ module.exports = {
 	INSIGHT_CREATE_SUCCESS: "insightCreateSuccess",
 	EXPORT_FILE_SUCCESS: "exportFileSuccess",
 	ERROR_USER_ROLE: "errorUserRole",
+	ERROR_GROUP_ACCOUNT: "errorGroupAccount",
 	// end I18n
 
 	ROLE: {

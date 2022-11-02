@@ -1,5 +1,7 @@
 const gql = require("moleculer-apollo-server").moleculerGql;
+const { GraphQLDateTime } = require("graphql-iso-date");
 module.exports = gql`
+	scalar DateTime
 	type InsightMutation {
 		Hello: String
 	}
@@ -35,18 +37,26 @@ module.exports = gql`
 	type TransactionStatisticsByAccountResponse {
 		message: String
 		succeeded: Boolean
-		data: [DataInfoByAccount]
+		data: DataInfoByAccount
 	}
 
 	type DataInfoByDay {
-		date: String
+		date: DateTime
 		totalCount: Int
 		totalCountOfSuccess: Int
 	}
 	type DataInfoByAccount {
-		date: String
-		totalCount: Int
-		totalCountOfSuccess: Int
+		totalTransaction: Int
+		totalTransactionSuccess: Int
+		accountsAndPayments: [DataAccountDetail]
+	}
+
+	type DataAccountDetail {
+		fullName: String
+		id: Int
+		email: String
+		totalTransaction: Int
+		totalTransactionSuccess: Int
 	}
 
 	type InsightExportToExcelByDayResponse {

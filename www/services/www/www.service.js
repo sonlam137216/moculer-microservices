@@ -18,7 +18,7 @@ module.exports = {
 			typeDefs: "",
 
 			// Global resolvers
-			resolvers: {},
+			resolvers: require("./graphql/scalars/date.scalar"),
 
 			// API Gateway route options
 			routeOptions: {

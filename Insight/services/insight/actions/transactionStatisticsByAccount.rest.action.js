@@ -1,10 +1,11 @@
 const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
+const insightConstant = require("../constant/insight.constant");
 
 module.exports = async function (ctx) {
 	try {
-		const { fromDate, toDate, method } = ctx.params.body;
+		const { fromDate, toDate, accountId } = ctx.params.body;
 
 		const inputFromDate = moment(fromDate).startOf("day").toISOString();
 		const inputToDate = moment(toDate).endOf("day").toISOString();
@@ -36,7 +37,7 @@ module.exports = async function (ctx) {
 			},
 		};
 
-		const methodQuery = method ? { paymentMethod: method } : {};
+		const methodQuery = accountId ? { userId: accountId } : {};
 
 		const paymentGroupByAccount = await this.broker.call(
 			"v1.PaymentInfoModel.aggregate",
@@ -65,9 +66,7 @@ module.exports = async function (ctx) {
 		if (!paymentGroupByAccount) {
 			return {
 				code: 1001,
-				data: {
-					message: "Group By Account không thành công!",
-				},
+				message: this.__(insightConstant.ERROR_GROUP_ACCOUNT),
 			};
 		}
 
@@ -129,9 +128,7 @@ module.exports = async function (ctx) {
 		if (!userAccounts) {
 			return {
 				code: 1001,
-				data: {
-					message: "Group By Account không thành công!",
-				},
+				message: this.__(insightConstant.ERROR_GROUP_ACCOUNT),
 			};
 		}
 
@@ -150,8 +147,8 @@ module.exports = async function (ctx) {
 
 		return {
 			code: 1000,
+			message: this.__(insightConstant.INSIGHT_CREATE_SUCCESS),
 			data: {
-				message: "Thành công",
 				totalTransaction,
 				totalTransactionSuccess,
 				accountsAndPayments: accountsAndPaymentSorted,

@@ -2,6 +2,7 @@ const _ = require("lodash");
 const { MoleculerError } = require("moleculer").Errors;
 const moment = require("moment");
 const insightConstant = require("../constant/insight.constant");
+const jwt = require("jsonwebtoken");
 
 module.exports = async function (ctx) {
 	try {

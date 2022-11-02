@@ -12,5 +12,6 @@
     "errorInsightCreate": "Tạo thống kê không thành công!",
     "insightCreateSuccess": "Tạo thống kê thành công!",
     "exportFileSuccess": "Xuất file excel thành công!",
-    "errorUserRole": "Phân quyền không đúng!"
+    "errorUserRole": "Phân quyền không đúng!",
+    "errorGroupAccount": "Group By Account không thành công!"
 }
