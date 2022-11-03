@@ -165,6 +165,14 @@ module.exports = async function (ctx) {
 			}
 		}
 
+		await ctx.broadcast("graphql.publish", {
+			tag: "createPayment",
+			payload: {
+				message: "Tạo đơn hàng!",
+				// data: {},
+			},
+		});
+
 		return isSuccess
 			? {
 					succeeded: true,

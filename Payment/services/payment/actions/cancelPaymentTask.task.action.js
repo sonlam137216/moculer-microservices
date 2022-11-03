@@ -21,7 +21,7 @@ module.exports = async function (ctx) {
 					},
 				},
 				"",
-				{ limit: 20 },
+				{ limit: 1 },
 			]
 		);
 
@@ -56,6 +56,16 @@ module.exports = async function (ctx) {
 						this.queuePaymentIds.splice(index, 1);
 					}
 				}
+
+				await ctx.broadcast("graphql.publish", {
+					tag: "cancelPayment",
+					payload: {
+						message: "Hủy đơn hàng!",
+						// data: {},
+					},
+				});
+
+				console.log("graphql publish");
 			})
 		);
 	} catch (err) {
