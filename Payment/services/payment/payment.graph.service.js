@@ -3,7 +3,7 @@ const moleculerI18n = require("moleculer-i18n-js");
 const path = require("path");
 
 module.exports = {
-	name: "Payment.graph",
+	name: "PaymentGraph",
 
 	version: 1,
 
@@ -31,12 +31,24 @@ module.exports = {
 			resolvers: {
 				PaymentMutation: {
 					CreatePayment: {
-						action: "v1.Payment.graph.createPayment",
+						action: "v1.PaymentGraph.createPayment",
 					},
 				},
 				PaymentQuery: {
 					GetPaymentById: {
-						action: "v1.Payment.graph.getPaymentById",
+						action: "v1.PaymentGraph.getPaymentById",
+					},
+				},
+				PaymentCreateSubscription: {
+					CreatePaymentSubscription: {
+						context: true,
+						action: "v1.PaymentGraph.createPaymentSubscription",
+					},
+				},
+				PaymentCancelSubscription: {
+					CancelPaymentSubscription: {
+						context: true,
+						action: "v1.PaymentGraph.cancelPaymentSubscription",
 					},
 				},
 			},
@@ -55,6 +67,23 @@ module.exports = {
 		createPayment: {
 			handler: require("./actions/createPayment.graph.action"),
 		},
+		createPaymentSubscription: {
+			graphql: {
+				subscription:
+					"PaymentCreateSubscription: PaymentCreateSubscription",
+				tags: ["createPayment"],
+			},
+			handler: require("./actions/createPaymentSubscription.action"),
+		},
+
+		cancelPaymentSubscription: {
+			graphql: {
+				subscription:
+					"PaymentCancelSubscription: PaymentCancelSubscription",
+				tags: ["cancelPayment"],
+			},
+			handler: require("./actions/cancelPaymentSubscription.action"),
+		},
 
 		getPaymentById: {
 			handler: require("./actions/getPaymentById.graph.action"),
@@ -64,6 +93,8 @@ module.exports = {
 			graphql: {
 				mutation: "PaymentMutation: PaymentMutation",
 				query: "PaymentQuery: PaymentQuery",
+				// subscription:
+				// 	"PaymentCreateSubscription: PaymentCreateSubscription",
 			},
 			handler(ctx) {
 				return true;
@@ -91,7 +122,15 @@ module.exports = {
 	 * Service created lifecycle event handler
 	 */
 	created() {
-		this.ServicesNoAuthList = [];
+		this.ServicesNoAuthList = [
+			"login",
+			"register",
+			"UserOps",
+			"forgotPassword",
+			"loginAdmin",
+			"createPaymentSubscription",
+			"cancelPaymentSubscription",
+		];
 	},
 
 	/**

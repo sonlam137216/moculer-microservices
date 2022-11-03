@@ -10,6 +10,27 @@ module.exports = gql`
 		GetPaymentById(input: PaymentGetByIdInput!): PaymentGetByIdResponse
 	}
 
+	type PaymentCreateSubscription {
+		"Subscription event"
+		CreatePaymentSubscription: PaymentCreateSubscriptionResponse
+	}
+
+	type PaymentCancelSubscription {
+		CancelPaymentSubscription: PaymentCancelSubscriptionResponse
+	}
+
+	type PaymentCreateSubscriptionResponse {
+		payload: PayloadInfo
+	}
+
+	type PaymentCancelSubscriptionResponse {
+		payload: PayloadInfo
+	}
+
+	type PayloadInfo {
+		message: String
+	}
+
 	type PaymentCreateResponse {
 		message: String
 		succeeded: Boolean
