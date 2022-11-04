@@ -1,7 +1,9 @@
 module.exports = async function (ctx) {
 	try {
 		return {
-			message: "Verify payment by Napas",
+			payload: {
+				message: "Bạn xác nhận đơn hàng thành công!",
+			},
 		};
 	} catch (err) {
 		console.log(err);

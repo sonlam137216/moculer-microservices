@@ -11,15 +11,28 @@ module.exports = gql`
 		TransferUpdateWalletSubscription: UpdateWalletTransferSubscriptionResponse
 	}
 
+	type UpdateWalletSub {
+		UpdateWalletSubscription: UpdateWalletSubscriptionResponse
+	}
+
+	type UpdateWalletSubscriptionResponse {
+		payload: UpdateWalletPayloadInfo
+	}
+
 	type UpdateWalletWithdrawSubscriptionResponse {
-		payload: PayloadInfo
+		payload: UpdateWalletPayloadInfo
 	}
 
 	type UpdateWalletDepositSubscriptionResponse {
-		payload: PayloadInfo
+		payload: UpdateWalletPayloadInfo
 	}
 
 	type UpdateWalletTransferSubscriptionResponse {
-		payload: PayloadInfo
+		payload: UpdateWalletPayloadInfo
+	}
+
+	type UpdateWalletPayloadInfo {
+		message: String
+		type: UpdateWalletSubTypeEnum
 	}
 `;

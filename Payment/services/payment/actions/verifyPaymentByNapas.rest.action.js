@@ -39,9 +39,10 @@ module.exports = async function (ctx) {
 		}
 
 		await ctx.broadcast("graphql.publish", {
-			tag: "verifyByNapas",
+			tag: "Payment",
 			payload: {
-				message: "Xác thực từ Napas",
+				type: "VERIFY_PAYMENT",
+				message: "Verify payment",
 			},
 		});
 

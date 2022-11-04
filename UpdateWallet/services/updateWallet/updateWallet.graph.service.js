@@ -35,16 +35,14 @@ module.exports = {
 						action: "v1.UpdateWalletGraph.withdrawUpdateWalletSubscription",
 					},
 				},
-				UpdateWalletDepositSubscription: {
-					DepositUpdateWalletSubscription: {
+
+				UpdateWalletSub: {
+					UpdateWalletSubscription: {
 						context: true,
-						action: "v1.UpdateWalletGraph.depositUpdateWalletSubscription",
-					},
-				},
-				UpdateWalletTransferSubscription: {
-					TransferUpdateWalletSubscription: {
-						context: true,
-						action: "v1.UpdateWalletGraph.transferUpdateWalletSubscription",
+						action: "v1.UpdateWalletGraph.updateWalletSubscription",
+						rootParams: {
+							payload: "payload",
+						},
 					},
 				},
 			},
@@ -60,30 +58,31 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
-		withdrawUpdateWalletSubscription: {
+		updateWalletSub: {
 			graphql: {
-				subscription:
-					"UpdateWalletWithdrawSubscription: UpdateWalletWithdrawSubscription",
-				tags: ["withdrawUpdateWallet"],
+				subscription: "UpdateWalletSub: UpdateWalletSub",
+				tags: ["UpdateWallet"],
 			},
+			handler(ctx) {
+				return {
+					payload: ctx.params.payload,
+				};
+			},
+		},
+
+		updateWalletSubscription: {
+			handler: require("./actions/updateWalletSubscription.action"),
+		},
+
+		withdrawUpdateWalletSubscription: {
 			handler: require("./actions/withdrawUpdateWalletSubscription.action"),
 		},
 
 		depositUpdateWalletSubscription: {
-			graphql: {
-				subscription:
-					"UpdateWalletDepositSubscription: UpdateWalletDepositSubscription",
-				tags: ["depositUpdateWallet"],
-			},
 			handler: require("./actions/depositUpdateWalletSubscription.action"),
 		},
 
 		transferUpdateWalletSubscription: {
-			graphql: {
-				subscription:
-					"UpdateWalletTransferSubscription: UpdateWalletTransferSubscription",
-				tags: ["transferUpdateWallet"],
-			},
 			handler: require("./actions/transferUpdateWalletSubscription.action"),
 		},
 	},
