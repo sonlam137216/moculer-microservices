@@ -4,7 +4,7 @@ module.exports = async function (ctx) {
 	try {
 		console.log(ctx.params);
 		return {
-			payload: {
+			payloadCancel: {
 				message: "Đơn hàng của bạn đã bị hủy!",
 			},
 		};

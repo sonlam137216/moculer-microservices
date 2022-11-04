@@ -16,7 +16,11 @@ module.exports = gql`
 	}
 
 	type PaymentCancelSubscription {
+		"Subscription event"
 		CancelPaymentSubscription: PaymentCancelSubscriptionResponse
+	}
+	type PaymentVerifyByNapasSubscription {
+		VerifyByNapasPaymentSubscription: PaymentVerifyByNapasSubscriptionResponse
 	}
 
 	type PaymentCreateSubscriptionResponse {
@@ -27,7 +31,18 @@ module.exports = gql`
 		payload: PayloadInfo
 	}
 
+	type PaymentVerifyByNapasSubscriptionResponse {
+		payload: PayloadInfo
+	}
+
 	type PayloadInfo {
+		message: String
+	}
+
+	type PayloadCreateInfo {
+		message: String
+	}
+	type PayloadCancelInfo {
 		message: String
 	}
 
