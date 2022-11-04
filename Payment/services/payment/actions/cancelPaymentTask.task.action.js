@@ -21,7 +21,7 @@ module.exports = async function (ctx) {
 					},
 				},
 				"",
-				{ limit: 1 },
+				{ limit: 2 },
 			]
 		);
 
@@ -60,8 +60,7 @@ module.exports = async function (ctx) {
 				await ctx.broadcast("graphql.publish", {
 					tag: "cancelPayment",
 					payload: {
-						message: "Hủy đơn hàng!",
-						// data: {},
+						message: "huy",
 					},
 				});
 

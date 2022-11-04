@@ -30,7 +30,6 @@ module.exports = async function (ctx) {
 				{ new: true },
 			]
 		);
-		console.log("updatedPayment", updatedPayment);
 
 		if (!updatedPayment) {
 			return {
@@ -38,6 +37,13 @@ module.exports = async function (ctx) {
 				message: this.__(paymentI18nConstant.ERROR_PAYMENT_EXPIRED),
 			};
 		}
+
+		await ctx.broadcast("graphql.publish", {
+			tag: "verifyByNapas",
+			payload: {
+				message: "Xác thực từ Napas",
+			},
+		});
 
 		return {
 			code: 1000,

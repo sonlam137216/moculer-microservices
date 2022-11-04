@@ -113,8 +113,8 @@ module.exports = async function (ctx) {
 						transactionAmount:
 							transactionResponseFromBank.data.transactionInfo
 								.transactionAmount,
-						status: transactionResponseFromBank.data.data
-							.transactionInfo.status,
+						status: transactionResponseFromBank.data.transactionInfo
+							.status,
 					},
 				},
 			]

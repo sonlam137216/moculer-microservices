@@ -86,9 +86,6 @@ module.exports = async function (ctx) {
 			};
 		}
 
-		console.log("walletSenderInfo", walletSenderInfo);
-		console.log("walletReceiverInfo", walletReceiverInfo);
-
 		let message = this.__(walletI18nConstant.ERROR_UPDATE_WALLET);
 		let balanceAvailableOfSender = walletSenderInfo.balanceAvailable;
 		let balanceAvailableOfReceiver = walletReceiverInfo.balanceAvailable;
@@ -126,6 +123,7 @@ module.exports = async function (ctx) {
 				}
 
 				message = this.__(walletI18nConstant.WALLET_ADD_SUCCESS);
+				tagSubscription = "depositWallet";
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.TRANSFER: {
@@ -171,6 +169,7 @@ module.exports = async function (ctx) {
 				);
 
 				message = this.__(walletI18nConstant.WALLET_TRANSFER_SUCCESS);
+				tagSubscription = "transferWallet";
 				break;
 			}
 			case walletConstant.WALLET_ACTION_TYPE.SUB: {
@@ -184,6 +183,7 @@ module.exports = async function (ctx) {
 					);
 				} else {
 					message = this.__(walletI18nConstant.WALLET_SUB_SUCCESS);
+					tagSubscription = "withdrawWallet";
 				}
 
 				// create history
@@ -275,9 +275,6 @@ module.exports = async function (ctx) {
 				);
 			}
 
-			console.log("updatedWalletSenderInfo", updatedWalletSenderInfo);
-			console.log("updatedWalletReceiverInfo", updatedWalletReceiverInfo);
-
 			if (_.get(updatedWalletReceiverInfo, "id", null) !== null) {
 				// update histories
 				if (_.get(walletHistoryOfSender, "id", null) !== null) {
@@ -321,11 +318,6 @@ module.exports = async function (ctx) {
 								new: true,
 							},
 						]
-					);
-
-					console.log(
-						"walletHistoryOfReceiver",
-						walletHistoryOfReceiver
 					);
 				}
 

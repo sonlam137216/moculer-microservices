@@ -57,6 +57,7 @@ module.exports = {
 				body: {
 					$$type: "object",
 					transactionAmount: "number",
+					language: "string|optional",
 				},
 			},
 
@@ -77,6 +78,7 @@ module.exports = {
 				body: {
 					$$type: "object",
 					transactionAmount: "number",
+					language: "string|optional",
 				},
 			},
 
@@ -98,6 +100,7 @@ module.exports = {
 					$$type: "object",
 					otp: "string",
 					transactionId: "string",
+					language: "string|optional",
 				},
 			},
 
@@ -119,6 +122,7 @@ module.exports = {
 					$$type: "object",
 					receiverId: "number",
 					amount: "number",
+					language: "string|optional",
 				},
 			},
 
@@ -141,6 +145,7 @@ module.exports = {
 					otp: "string",
 					transactionId: "string",
 					receiverId: "number",
+					language: "string|optional",
 				},
 			},
 

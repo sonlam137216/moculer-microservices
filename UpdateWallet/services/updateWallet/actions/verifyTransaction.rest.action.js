@@ -49,10 +49,12 @@ module.exports = async function (ctx) {
 		const verifyTransactionFromBank = await this.broker.call(
 			"v1.Bank.verifyRequestPayment",
 			{
-				otp,
-				transactionId:
-					existingTransaction.transactionInfoFromSupplier
-						.transactionId,
+				body: {
+					otp,
+					transactionId:
+						existingTransaction.transactionInfoFromSupplier
+							.transactionId,
+				},
 			}
 		);
 
@@ -104,6 +106,31 @@ module.exports = async function (ctx) {
 					serviceName: ctx.service.name,
 				},
 			});
+
+			let tagSubscription;
+
+			switch (updatedTransaction.transactionInfo.transferType) {
+				case updateWalletConstant.WALLET_ACTION_TYPE.SUB:
+					tagSubscription = "withdrawUpdateWallet";
+					break;
+				case updateWalletConstant.WALLET_ACTION_TYPE.ADD:
+					tagSubscription = "depositUpdateWallet";
+					break;
+				case updateWalletConstant.WALLET_ACTION_TYPE.TRANSFER:
+					tagSubscription = "transferUpdateWallet";
+					break;
+				default:
+					break;
+			}
+
+			if (tagSubscription) {
+				await ctx.broadcast("graphql.publish", {
+					tag: tagSubscription,
+					payload: {
+						message: "Xác thực từ Transaction",
+					},
+				});
+			}
 
 			return {
 				code: 1000,

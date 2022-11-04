@@ -43,7 +43,7 @@ module.exports = {
 	crons: [
 		{
 			name: "CANCEL_PAYMENT_AFTER_1_HOUR",
-			cronTime: "0 10 * * * *",
+			cronTime: "0 * * * * *",
 			async onTick() {
 				try {
 					await this.call("v1.Payment.cancelPaymentTask.async");

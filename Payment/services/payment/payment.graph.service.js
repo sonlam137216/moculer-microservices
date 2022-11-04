@@ -39,6 +39,12 @@ module.exports = {
 						action: "v1.PaymentGraph.getPaymentById",
 					},
 				},
+				// PaymentSubscription: {
+				// 	__resolveType: {
+				// 		action: "v1.PaymentGraph.test",
+				// 	},
+				// },
+
 				PaymentCreateSubscription: {
 					CreatePaymentSubscription: {
 						context: true,
@@ -51,6 +57,18 @@ module.exports = {
 						action: "v1.PaymentGraph.cancelPaymentSubscription",
 					},
 				},
+				PaymentVerifyByNapasSubscription: {
+					VerifyByNapasPaymentSubscription: {
+						context: true,
+						action: "v1.PaymentGraph.verifyByNapasPaymentSubscription",
+					},
+				},
+				// PaymentCreateSubscriptionResponse: {
+				// 	PayloadCreate: {
+				// 		context: true,
+				// 		action: "v1.PaymentGraph.payloadCreate",
+				// 	},
+				// },
 			},
 		},
 		salt: "secret_salt",
@@ -64,6 +82,9 @@ module.exports = {
 	 * Actions
 	 */
 	actions: {
+		// payloadCreate: {
+		// 	handler: require("./actions/payloadCreate.action"),
+		// },
 		createPayment: {
 			handler: require("./actions/createPayment.graph.action"),
 		},
@@ -85,6 +106,15 @@ module.exports = {
 			handler: require("./actions/cancelPaymentSubscription.action"),
 		},
 
+		verifyByNapasPaymentSubscription: {
+			graphql: {
+				subscription:
+					"PaymentVerifyByNapasSubscription: PaymentVerifyByNapasSubscription",
+				tags: ["verifyByNapas"],
+			},
+			handler: require("./actions/verifyPaymentByNapasSubscription.action"),
+		},
+
 		getPaymentById: {
 			handler: require("./actions/getPaymentById.graph.action"),
 		},
@@ -93,13 +123,25 @@ module.exports = {
 			graphql: {
 				mutation: "PaymentMutation: PaymentMutation",
 				query: "PaymentQuery: PaymentQuery",
-				// subscription:
-				// 	"PaymentCreateSubscription: PaymentCreateSubscription",
 			},
 			handler(ctx) {
+				console.log("ctx :>> ", ctx);
 				return true;
 			},
 		},
+
+		// PaymentSubscriptionOps: {
+		// 	graphql: {
+		// 		subscription: "PaymentSubscription: PaymentSubscription",
+		// 		tags: ["UNION"],
+		// 	},
+		// 	handler(ctx) {
+		// 		console.log("SocketBoGraph >>> ", ctx.params);
+		// 		_.set(this, "payload", ctx.params.payload);
+		// 		return ctx.params.payload;
+		// 		// return ctx;
+		// 	},
+		// },
 	},
 
 	/**
@@ -130,13 +172,30 @@ module.exports = {
 			"loginAdmin",
 			"createPaymentSubscription",
 			"cancelPaymentSubscription",
+			"payloadCreate",
+			"PaymentSubscriptionOps",
 		];
 	},
 
 	/**
 	 * Service started lifecycle event handler
 	 */
-	async started() {},
+	async started() {
+		// setInterval(async () => {
+		// 	try {
+		// 		const rs = await this.broker.broadcast("graphql.publish", {
+		// 			tag: "UNION_TEST",
+		// 			payload: {
+		// 				__typename: "Socket1",
+		// 				message: "Tạo đơn hàng!",
+		// 			},
+		// 		});
+		// 		console.log("rs", rs);
+		// 	} catch (error) {
+		// 		console.log("error :>> ", error);
+		// 	}
+		// }, 3000);
+	},
 
 	/**
 	 * Service stopped lifecycle event handler
