@@ -39,34 +39,32 @@ module.exports = {
 						action: "v1.PaymentGraph.getPaymentById",
 					},
 				},
-				// PaymentSubscription: {
-				// 	__resolveType: {
-				// 		action: "v1.PaymentGraph.test",
+				PaymentSubscription: {
+					PaymentSub: {
+						context: true,
+						action: "v1.PaymentGraph.paymentSub",
+						rootParams: {
+							payload: "payload",
+						},
+					},
+				},
+
+				// PaymentCreateSubscription: {
+				// 	CreatePaymentSubscription: {
+				// 		context: true,
+				// 		action: "v1.PaymentGraph.createPaymentSubscription",
 				// 	},
 				// },
-
-				PaymentCreateSubscription: {
-					CreatePaymentSubscription: {
-						context: true,
-						action: "v1.PaymentGraph.createPaymentSubscription",
-					},
-				},
-				PaymentCancelSubscription: {
-					CancelPaymentSubscription: {
-						context: true,
-						action: "v1.PaymentGraph.cancelPaymentSubscription",
-					},
-				},
-				PaymentVerifyByNapasSubscription: {
-					VerifyByNapasPaymentSubscription: {
-						context: true,
-						action: "v1.PaymentGraph.verifyByNapasPaymentSubscription",
-					},
-				},
-				// PaymentCreateSubscriptionResponse: {
-				// 	PayloadCreate: {
+				// PaymentCancelSubscription: {
+				// 	CancelPaymentSubscription: {
 				// 		context: true,
-				// 		action: "v1.PaymentGraph.payloadCreate",
+				// 		action: "v1.PaymentGraph.cancelPaymentSubscription",
+				// 	},
+				// },
+				// PaymentVerifyByNapasSubscription: {
+				// 	VerifyByNapasPaymentSubscription: {
+				// 		context: true,
+				// 		action: "v1.PaymentGraph.verifyByNapasPaymentSubscription",
 				// 	},
 				// },
 			},
@@ -88,30 +86,47 @@ module.exports = {
 		createPayment: {
 			handler: require("./actions/createPayment.graph.action"),
 		},
-		createPaymentSubscription: {
+
+		paymentSubscription: {
 			graphql: {
-				subscription:
-					"PaymentCreateSubscription: PaymentCreateSubscription",
-				tags: ["createPayment"],
+				subscription: "PaymentSubscription: PaymentSubscription",
+				tags: ["Payment"],
 			},
+			handler(ctx) {
+				return {
+					payload: ctx.params.payload,
+				};
+			},
+		},
+
+		paymentSub: {
+			handler: require("./actions/paymentSub.action"),
+		},
+
+		createPaymentSubscription: {
+			// graphql: {
+			// 	subscription:
+			// 		"PaymentCreateSubscription: PaymentCreateSubscription",
+			// 	tags: ["createPayment"],
+			// },
 			handler: require("./actions/createPaymentSubscription.action"),
 		},
 
 		cancelPaymentSubscription: {
-			graphql: {
-				subscription:
-					"PaymentCancelSubscription: PaymentCancelSubscription",
-				tags: ["cancelPayment"],
-			},
+			// graphql: {
+			// 	subscription:
+			// 		"PaymentCancelSubscription: PaymentCancelSubscription",
+			// 	tags: ["cancelPayment"],
+			// },
 			handler: require("./actions/cancelPaymentSubscription.action"),
 		},
 
 		verifyByNapasPaymentSubscription: {
-			graphql: {
-				subscription:
-					"PaymentVerifyByNapasSubscription: PaymentVerifyByNapasSubscription",
-				tags: ["verifyByNapas"],
-			},
+			// graphql: {
+			// 	subscription:
+			// 		"PaymentVerifyByNapasSubscription: PaymentVerifyByNapasSubscription",
+			// 	tags: ["verifyByNapas"],
+			// },
 			handler: require("./actions/verifyPaymentByNapasSubscription.action"),
 		},
 
@@ -125,7 +140,7 @@ module.exports = {
 				query: "PaymentQuery: PaymentQuery",
 			},
 			handler(ctx) {
-				console.log("ctx :>> ", ctx);
+				// console.log("ctx :>> ", ctx);
 				return true;
 			},
 		},
@@ -174,6 +189,8 @@ module.exports = {
 			"cancelPaymentSubscription",
 			"payloadCreate",
 			"PaymentSubscriptionOps",
+			"paymentSubscription",
+			"paymentSub",
 		];
 	},
 

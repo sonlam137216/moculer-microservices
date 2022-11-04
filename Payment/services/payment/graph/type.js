@@ -10,6 +10,14 @@ module.exports = gql`
 		GetPaymentById(input: PaymentGetByIdInput!): PaymentGetByIdResponse
 	}
 
+	type PaymentSubscription {
+		PaymentSub: PaymentSubscriptionResponse
+	}
+
+	type PaymentSubscriptionResponse {
+		payload: PayloadInfo
+	}
+
 	type PaymentCreateSubscription {
 		"Subscription event"
 		CreatePaymentSubscription: PaymentCreateSubscriptionResponse
@@ -37,6 +45,7 @@ module.exports = gql`
 
 	type PayloadInfo {
 		message: String
+		type: PaymentSubTypeEnum
 	}
 
 	type PayloadCreateInfo {

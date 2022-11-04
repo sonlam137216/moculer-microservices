@@ -107,27 +107,33 @@ module.exports = async function (ctx) {
 				},
 			});
 
-			let tagSubscription;
+			let typeSubscription;
 
 			switch (updatedTransaction.transactionInfo.transferType) {
 				case updateWalletConstant.WALLET_ACTION_TYPE.SUB:
-					tagSubscription = "withdrawUpdateWallet";
+					typeSubscription =
+						updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE
+							.WITHDRAW;
 					break;
 				case updateWalletConstant.WALLET_ACTION_TYPE.ADD:
-					tagSubscription = "depositUpdateWallet";
+					typeSubscription =
+						updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE
+							.DEPOSIT;
 					break;
 				case updateWalletConstant.WALLET_ACTION_TYPE.TRANSFER:
-					tagSubscription = "transferUpdateWallet";
+					typeSubscription =
+						updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE
+							.TRANSFER;
 					break;
 				default:
 					break;
 			}
 
-			if (tagSubscription) {
+			if (typeSubscription) {
 				await ctx.broadcast("graphql.publish", {
-					tag: tagSubscription,
+					tag: "UpdateWallet",
 					payload: {
-						message: "Xác thực từ Transaction",
+						type: typeSubscription,
 					},
 				});
 			}

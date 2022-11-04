@@ -166,8 +166,9 @@ module.exports = async function (ctx) {
 		}
 
 		await ctx.broadcast("graphql.publish", {
-			tag: "createPayment",
+			tag: "Payment",
 			payload: {
+				type: "CREATE_PAYMENT",
 				message: "Tao don hang",
 			},
 		});
