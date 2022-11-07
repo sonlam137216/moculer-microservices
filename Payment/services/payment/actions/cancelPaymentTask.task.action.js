@@ -61,11 +61,10 @@ module.exports = async function (ctx) {
 					tag: "Payment",
 					payload: {
 						type: "CANCEL_PAYMENT",
-						message: "Huy don hang",
+						accountId: updatedPayment.userId,
+						paymentInfo: updatedPayment,
 					},
 				});
-
-				console.log("graphql publish");
 			})
 		);
 	} catch (err) {

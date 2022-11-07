@@ -14,7 +14,7 @@ module.exports = async function (ctx) {
 
 		if (this.ServicesNoAuthList.includes(rawName)) return true;
 
-		if (!ctx.meta.auth.credentials.userId) {
+		if (!ctx.meta?.auth?.credentials?.userId) {
 			throw new MoleculerError(
 				this.__(paymentI18nConstant.ERROR_TOKEN_MISSING),
 				401
@@ -49,8 +49,6 @@ module.exports = async function (ctx) {
 				},
 			]
 		);
-
-		console.log("LOGIN SESSION", loginSession);
 
 		if (
 			_.get(loginSession, "userId", null) === null ||

@@ -42,7 +42,8 @@ module.exports = async function (ctx) {
 			tag: "Payment",
 			payload: {
 				type: "VERIFY_PAYMENT",
-				message: "Verify payment",
+				accountId: updatedPayment.userId,
+				paymentInfo: updatedPayment,
 			},
 		});
 

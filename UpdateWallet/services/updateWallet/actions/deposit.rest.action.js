@@ -108,8 +108,6 @@ module.exports = async function (ctx) {
 			]
 		);
 
-		console.log("updatedTransaction", updatedTransaction);
-
 		if (_.get(updatedTransaction, "id", null) === null) {
 			return {
 				code: 1001,

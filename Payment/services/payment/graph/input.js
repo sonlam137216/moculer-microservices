@@ -6,11 +6,16 @@ module.exports = gql`
 		description: String
 		note: String
 		paymentMethod: PaymentMethodEnum!
+		accountId: Int!
 		language: LanguageEnum
 	}
 
 	input PaymentGetByIdInput {
 		id: Int!
 		language: LanguageEnum
+	}
+
+	input PaymentSubscriptionInput {
+		accountId: Int!
 	}
 `;

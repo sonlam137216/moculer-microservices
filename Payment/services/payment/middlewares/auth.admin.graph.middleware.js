@@ -48,8 +48,6 @@ module.exports = async function (ctx) {
 			]
 		);
 
-		console.log("LOGIN SESSION", loginSession);
-
 		if (
 			_.get(loginSession, "userId", null) === null ||
 			_.get(loginSession, "expiredAt", null) === null

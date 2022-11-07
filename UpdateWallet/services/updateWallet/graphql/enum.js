@@ -8,4 +8,22 @@ module.exports = gql`
 		"chuyển tiền"
 		TRANSFER
 	}
+	enum UpdateWalletTransactionStatusEnum {
+		"Đang xử lý"
+		PENDING
+		"thành công"
+		SUCCEEDED
+		"thất bại"
+		FAILED
+	}
+	enum UpdateWalletActionTypeEnum {
+		"Cộng tiền"
+		ADD
+		"Trừ tiền"
+		SUB
+		"Chuyển tiền"
+		TRANSFER
+		"thanh toán hóa đơn"
+		PAYMENT
+	}
 `;

@@ -2,10 +2,14 @@ const _ = require("lodash");
 
 module.exports = async function (ctx) {
 	try {
-		console.log("hello");
+		const { type, accountId, paymentInfo } = ctx.params.payload;
+
 		return {
 			payload: {
-				message: "Bạn đã tạo đơn hàng thành công!",
+				message: "Tạo đơn hàng thành công",
+				accountId: accountId,
+				paymentInfo,
+				type,
 			},
 		};
 	} catch (err) {

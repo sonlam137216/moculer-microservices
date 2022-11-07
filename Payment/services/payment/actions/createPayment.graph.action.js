@@ -169,7 +169,8 @@ module.exports = async function (ctx) {
 			tag: "Payment",
 			payload: {
 				type: "CREATE_PAYMENT",
-				message: "Tao don hang",
+				accountId: userInfo.id,
+				paymentInfo,
 			},
 		});
 
