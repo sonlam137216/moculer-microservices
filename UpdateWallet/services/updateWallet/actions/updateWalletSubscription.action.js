@@ -19,31 +19,35 @@ module.exports = async function (ctx) {
 		switch (type) {
 			case updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE.DEPOSIT:
 				data = await this.broker.call(
-					"v1.UpdateWalletGraph.depositUpdateWalletSubscription"
+					"v1.UpdateWalletGraph.depositUpdateWalletSubscription",
+					{
+						payload: ctx.params.payload,
+					}
 				);
 				break;
 
 			case updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE.WITHDRAW:
 				data = await this.broker.call(
-					"v1.UpdateWalletGraph.withdrawUpdateWalletSubscription"
+					"v1.UpdateWalletGraph.withdrawUpdateWalletSubscription",
+					{
+						payload: ctx.params.payload,
+					}
 				);
 				break;
 
 			case updateWalletConstant.UPDATE_WALLET_SUBSCRIPTION_TYPE.TRANSFER:
 				data = await this.broker.call(
-					"v1.UpdateWalletGraph.transferUpdateWalletSubscription"
+					"v1.UpdateWalletGraph.transferUpdateWalletSubscription",
+					{
+						payload: ctx.params.payload,
+					}
 				);
 				break;
 			default:
 				break;
 		}
 
-		return {
-			payload: {
-				type,
-				message: data.payload.message,
-			},
-		};
+		return data;
 	} catch (err) {
 		console.log(err);
 		if (err.name === "MoleculerError") throw err;

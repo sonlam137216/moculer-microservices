@@ -5,7 +5,6 @@ const walletConstant = require("../constants/wallet.constant");
 const walletI18nConstant = require("../constants/walletI18n.constant");
 
 module.exports = async function (ctx) {
-	console.log("CTX", ctx);
 	let lock;
 	let accountId;
 	try {

@@ -42,8 +42,8 @@ module.exports = async function (ctx) {
 				transactionInfo,
 			},
 		};
-	} catch (error) {
-		console.log("ERR", error);
+	} catch (err) {
+		console.log("ERR", err);
 		if (err.name === "MoleculerError") throw err;
 		throw new MoleculerError(`[MiniProgram] Create Order: ${err.message}`);
 	}

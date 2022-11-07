@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const moleculerI18n = require("moleculer-i18n-js");
 const path = require("path");
+const { withFilter } = require("graphql-subscriptions");
 
 module.exports = {
 	name: "PaymentGraph",
@@ -86,11 +87,15 @@ module.exports = {
 		createPayment: {
 			handler: require("./actions/createPayment.graph.action"),
 		},
-
+		filterAccountId: {
+			handler: require("./actions/filterAccountId.subscription.action"),
+		},
 		paymentSubscription: {
 			graphql: {
-				subscription: "PaymentSubscription: PaymentSubscription",
+				subscription:
+					"PaymentSubscription(accountId: Int!): PaymentSubscription",
 				tags: ["Payment"],
+				filter: "v1.PaymentGraph.filterAccountId",
 			},
 			handler(ctx) {
 				return {
@@ -122,11 +127,6 @@ module.exports = {
 		},
 
 		verifyByNapasPaymentSubscription: {
-			// graphql: {
-			// 	subscription:
-			// 		"PaymentVerifyByNapasSubscription: PaymentVerifyByNapasSubscription",
-			// 	tags: ["verifyByNapas"],
-			// },
 			handler: require("./actions/verifyPaymentByNapasSubscription.action"),
 		},
 
@@ -189,6 +189,7 @@ module.exports = {
 			"cancelPaymentSubscription",
 			"payloadCreate",
 			"PaymentSubscriptionOps",
+			"filterAccountId",
 			"paymentSubscription",
 			"paymentSub",
 		];

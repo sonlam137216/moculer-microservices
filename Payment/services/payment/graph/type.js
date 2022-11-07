@@ -15,7 +15,23 @@ module.exports = gql`
 	}
 
 	type PaymentSubscriptionResponse {
-		payload: PayloadInfo
+		payload: PaymentPayloadSubInfo
+	}
+
+	type PaymentPayloadSubInfo {
+		message: String
+		type: PaymentSubTypeEnum
+		accountId: Int
+		paymentInfo: PaymentSubInfo
+	}
+
+	type PaymentSubInfo {
+		totalPrice: Int
+		description: String
+		note: String
+		status: PaymentStatusEnum
+		paymentMethod: PaymentMethodEnum
+		id: Int
 	}
 
 	type PaymentCreateSubscription {
@@ -32,20 +48,22 @@ module.exports = gql`
 	}
 
 	type PaymentCreateSubscriptionResponse {
-		payload: PayloadInfo
+		payload: PaymentPayloadInfo
 	}
 
 	type PaymentCancelSubscriptionResponse {
-		payload: PayloadInfo
+		payload: PaymentPayloadInfo
 	}
 
 	type PaymentVerifyByNapasSubscriptionResponse {
-		payload: PayloadInfo
+		payload: PaymentPayloadInfo
 	}
 
-	type PayloadInfo {
+	type PaymentPayloadInfo {
 		message: String
 		type: PaymentSubTypeEnum
+		accountId: Int
+		paymentInfo: PaymentInfo
 	}
 
 	type PayloadCreateInfo {

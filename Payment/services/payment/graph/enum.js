@@ -22,11 +22,11 @@ module.exports = gql`
 		FAILED
 	}
 	enum PaymentSubTypeEnum {
-		"tạo thanh toán"
-		CREATE_PAYMENT
-		"hủy thanh toán"
-		CANCEL_PAYMENT
 		"xác nhận thanh toán"
 		VERIFY_PAYMENT
+		"hủy thanh toán"
+		CANCEL_PAYMENT
+		"tạo thanh toán"
+		CREATE_PAYMENT
 	}
 `;

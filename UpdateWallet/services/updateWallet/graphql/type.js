@@ -34,5 +34,13 @@ module.exports = gql`
 	type UpdateWalletPayloadInfo {
 		message: String
 		type: UpdateWalletSubTypeEnum
+		accountId: Int
+		transactionInfo: TransactionInfo
+	}
+	type TransactionInfo {
+		transactionId: String
+		transactionAmount: Float
+		status: UpdateWalletTransactionStatusEnum
+		transferType: UpdateWalletActionTypeEnum
 	}
 `;

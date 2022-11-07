@@ -86,6 +86,9 @@ module.exports = async function (ctx) {
 									.SUCCEEDED,
 						},
 					},
+					{
+						new: true,
+					},
 				]
 			);
 
@@ -134,6 +137,8 @@ module.exports = async function (ctx) {
 					tag: "UpdateWallet",
 					payload: {
 						type: typeSubscription,
+						accountId: userId,
+						transactionInfo: updatedTransaction.transactionInfo,
 					},
 				});
 			}

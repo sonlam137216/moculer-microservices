@@ -60,8 +60,10 @@ module.exports = {
 	actions: {
 		updateWalletSub: {
 			graphql: {
-				subscription: "UpdateWalletSub: UpdateWalletSub",
+				subscription:
+					"UpdateWalletSub(accountId: Int!): UpdateWalletSub",
 				tags: ["UpdateWallet"],
+				filter: "v1.PaymentGraph.filterAccountId",
 			},
 			handler(ctx) {
 				return {
